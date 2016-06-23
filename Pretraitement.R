@@ -57,8 +57,8 @@ maindf <- maindf[ , keepcol]
 # maindf <- maindf[ -345,]
 
 
-unique(maindf$filiere)
-levels(maindf$filiere)
+# unique(maindf$filiere)
+# levels(maindf$filiere)
 
 #  REM Problèmes avec la liste des filières
 #  Civilite	Prenom	Nom	Centre	Nom Filiere	multiplicité
@@ -81,7 +81,7 @@ ndip <- nrow(maindf)
 #
 nrepvect <- sapply(1:nrow(maindf), function(i) sum(!is.na(maindf[i, -(1:13)])) )
 
-
+#' Table du nombre de réponses et détection des nonrépondants
 trep <- table(nrepvect)
 prep <- trep/ndip
 
@@ -89,6 +89,12 @@ nrep <-  as.data.frame(nrepvect)
 nrepv0 <- nrepvect[nrepvect > 0]
 nrep0 <- as.data.frame(nrepv0)
 
+# graphe du nombre de réponses
 p <- ggplot(nrep0,aes(nrepv0) ) +
         geom_bar()
 p
+
+
+#' ### Colonnes sans réponses?
+repcol <- sapply(maindf, function(col) sum(!is.na(col)))
+
