@@ -98,3 +98,7 @@ p
 #' ### Colonnes sans réponses?
 repcol <- sapply(maindf, function(col) sum(!is.na(col)))
 
+#' génération liste variablex
+lvar <- factor(paste0("*", colnames(maindf), "* (", repcol, ")"))
+lvar
+
