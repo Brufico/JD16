@@ -3,46 +3,60 @@ title: "Enquête Jeunes Diplômés 2015"
 author: "Bruno Fischer Colonimos"
 date: "24 juin 2016"
 output:
+  pdf_document:
+    number_sections: yes
+    toc: yes
   html_document:
     css: customex2.css
     number_sections: yes
     theme: readable
     toc: yes
-  pdf_document:
-    number_sections: yes
-    toc: yes
-subtitle: codebook
+subtitle: Codebook
 ---
 
 -------------------------------------------------------------
 
 
-Structure du questionnaire et correspondance avec les variables: Principe
+Principes: Structure du questionnaire et correspondance avec les variables 
 =========================================================================
 
-Organisation des questions d'enquête, dans l'ordre des variables de la table des données (et des questions du questionnaire).  
-Sauf exception, seules les questions susceptibles d'une exploitation dans l'enquête statistique sont listées.
+Ce document présente un dictionnaire des données, en faisant le lien avec les questions de l'enquête
+Les variables sot présentées dans l'ordre des questions dans l'enquête. 
+Généralement, det ordre correspond à l'ordre des colonnes de la table des données.  
+Il se peut que certaines questions non susceptibles d'une exploitation dans l'enquête (Questions ouvertes texte) ne soient pas listées.
+Il se peut que les questions ayant recueilli très peu de réponses ne soient pas traitées.
 
-Format:
+
+Format des entrées :
+--------------------
 
 PARTIE DU QUESTIONNAIRE
 
-* question? *nom_variable* (nombre de répondants) [type] (REM: remarque)
+**SI** <condition pour que la question soit posée (si il y a une condition, sion rien) >
+
+* texte de la question? *nom_variable* (nombre de répondants) [type] (REM: remarque)
     - réponse1
     - réponse2
     - ...
 
-types questions/variables: 
-[num]: Quanti
-[ord]: ordinale
-[cat]: quali
-[Mcat]: quali, réponses multiples
-[Mocat]: quali, réponses multiples ordonnées
-
-[num] [ord] [cat] [Mcat] [Mocat] 
+**FINSI** (si nécessaire)
 
 
-Structure du questionnaire et correspondance avec les variables: Liste
+Nomenclature des types de questions/variables/traitement
+--------------------------------------------------------
+
+* '[num]: quanti
+* '[ord]: ordinale ==> facteur ordonné
+* '[lik] : ordinale ==> echelle de Likert
+* '[cat]: quali
+* '[Mcat]: quali, réponses multiples
+* '[Mocat]: quali, réponses multiples ordonnées
+* '[V] : ouverte, verbatim
+
+
+
+
+Structure du questionnaire, variables: Liste structurée
 ======================================================================
 
 
@@ -109,7 +123,7 @@ SUR L'ENTREPRISE QUI VOUS A ACCUEILLI EN ALTERNANCE
 
 **SI** *alternance_proposition* == Oui ET *alternance_accepter* == Non
 
-* 19 Pour quelle(s) raison(s) avez-vous refusé cette proposition ? [Mcat] *alternance_refus* (24)
+* 19 Pour quelle(s) raison(s) avez-vous refusé cette proposition ?  *alternance_refus* (24) [Mcat]
     - Rémunération insuffisante
     - Manque d'intérêt de la mission proposée
     - Volonté de changer d'environnement
@@ -161,7 +175,7 @@ SITUATION ACTUELLE
     - 4 mois à moins de 6 mois
     - 6 mois et plus
 
-* 26 Avez-vous refusé une ou plusieurs propositions d'emploi depuis ? *situation_refus_proposition* *situation_refus_proposition* (40)
+* 26 Avez-vous refusé une ou plusieurs propositions d'emploi depuis ?  *situation_refus_proposition* (40) [cat]
     - Oui
     - Non
 
@@ -206,17 +220,34 @@ variables\
     - Préparation d'un concours
     - Autre
 
-* Pourquoi ? (QF) *situation_etudes_raison* (17)
+* 33 Dans quel établissement (nom et ville) êtes-vous inscrit(e) ? *situation_etudes_etablissement* (15) [V]
+* 34 Intitulé exact de la formation *situation_etudes_intitule* (15) [V]
+
+
+* 35 Poursuivez-vous vos études en alternance ? *situation_etudes_alternance* (17) [cat]
+    - Oui
+    - Non
+
+* 36 Pour quelle raison avez-vous principalement choisi de poursuivre des études ? *situation_etudes_raison* (17) [cat]
+    - Pour acquérir une spécialisation, dans le cadre de mon projet professionnel
+    - Pour acquérir une double compétence
+    - Pour acquérir une compétence complémentaire
+    - Pour optimiser mes chances de trouver un emploi
+    - Dans l'attente de trouver un emploi
+    - Autre
+
 
 **FINSI**
 
-PREMIERES QUESTIONS SUR VOTRE EMPLOI ACTUEL (q37+)
---------------------------------------------------
 
-* emploi n° *emploi_actuel_premier_second* 
-    - 1
-    - 2+
-* 38 type emploi *emploi_actuel_type*
+PREMIERES QUESTIONS SUR VOTRE EMPLOI ACTUEL
+-------------------------------------------
+
+* 37 Il s'agit d'un° *emploi_actuel_premier_second* (166) [ord]
+    - 1er emploi depuis la sortie de l'école
+    - 2ème emploi ou plus depuis la sortie de l'école
+
+* 38 Sur cet emploi, vous êtes *emploi_actuel_type* (165) [cat]
     - Salarié(e) d'une entreprise privée
     - Salarié(e) de l'Etat 
     - Salarié(e) d'une collectivité territoriale, d'une entreprise publique ou d'une structure associative
@@ -225,36 +256,47 @@ PREMIERES QUESTIONS SUR VOTRE EMPLOI ACTUEL (q37+)
 
 **Si** *emploi_actuel_type* == collectivité territoriale:
 
-* statut= *emploi_actuel_statut*
+* 39 Avez-vous un statut de: *emploi_actuel_statut* (0) [cat] (REM XXXXX)
     - Fonctionnaire
     - Agent contractuel
-* *Si* non-salarié: statut= *emploi_actuel_statut.1*
+    
+* *Si* *emploi_actuel_type* == Non salarié(e) ...
+
+* 40 Vous êtes chef d'entreprise, en êtes-vous *emploi_actuel_statut.1* (0) [cat] (REM XXXXXXXXXX)
     - Le créateur 
     - Le repreneur
-* 41 Combien de temps avez-vous mis pour trouver cet emploi? *emploi_actuel_temps_recherche* (0)
+
+* 41 Combien de temps avez-vous mis pour trouver cet emploi? *emploi_actuel_temps_recherche* (0) [ord] (REM XXXXXXXXXX)
     - Contrat avant la sortie de l'école
     - Moins de 2 mois de recherche
     - De 2 à moins de 4 mois
     - De 4 à moins de 6 mois
     - 6 mois ou plus
     
-* *emploi_actuel_temps_poste*  (0)
+* 42 Depuis combien de temps occupez-vous cet emploi ? *emploi_actuel_temps_poste*  (0) [?] (REM XXXXXXXXXX)
+
 
 INFORMATIONS SUR VOTRE ENTREPRISE
 ---------------------------------
 
-* signalétique()
-* secteur d'activité *entreprise_secteur*
+* 43- 49 signalétique entreprise
+* 50 Secteur d'activité de votre entreprise *entreprise_secteur* (143) [cat]
        - 27 secteurs !!!
-* *Si* etudes_conseil, secteur d'intervention principal *entreprise_secteur_principal*
-* 52 Taille de l'entreprise
+
+**SI** *entreprise_secteur* == etudes_conseil, 
+
+* 51 Quel est le principal secteur d'activité dans lequel votre entreprise (bureau d'études, société de conseil) vous conduit à intervenir le plus souvent ? *entreprise_secteur_principal* [cat]
+
+* 52 Quelle est la taille de l'entreprise (ou du groupe si l'entreprise appartient à un groupe) dans laquelle vous travaillez ? *entreprise_taille* (139) [ord]
     - 10 classes
-    
+
+
 INFORMATIONS SUR VOTRE EMPLOI
 -----------------------------
 
-* 53 Quelle est votre fonction précise ? (QO)
-* 54 Quelle est votre activité principale ? UNE R *votre_emploi_activite*
+* 53 Quelle est votre fonction précise ? *votre_emploi_fonction* (139) [V]
+
+* 54 Quelle est votre activité principale ? *votre_emploi_activite* (118) [cat]
     - Direction générale
     - Gestion, finance, comptabilité
     - Audit
@@ -282,18 +324,18 @@ INFORMATIONS SUR VOTRE EMPLOI
     - Enseignement - Formation
     - Autre
 
-* 55 Quel est votre contrat de travail ? UNE R *votre_emploi_type_contrat*
+* 55 Quel est votre contrat de travail ? *votre_emploi_type_contrat* [cat]
     - CDI (Contrat à durée indéterminée)
     - CDD (Contrat à durée déterminée)
     - Mission d'intérim
     - Contrat local à l'étranger
     - Autre
 
-* 56 Quand a débuté votre contrat de travail ? (ouverte date)
+* 56 Quand a débuté votre contrat de travail ? *votre_emploi_debut* (127) [V] (REM ouverte texte: a convertir !)
 
 **SI** votre_emploi_type_contrat = CDD
 
-* 57 Quelle est la durée de votre CDD (en nombre de mois) ? *votre_emploi_duree_cdd* NUM
+* 57 Quelle est la durée de votre CDD (en nombre de mois) ? *votre_emploi_duree_cdd* [num]
 
 ** FINSI **
 
@@ -301,83 +343,80 @@ INFORMATIONS SUR VOTRE EMPLOI
     - Oui
     - Non
 
-* *SI* votre_emploi_temps_partiel = CDD :
+**SI** votre_emploi_temps_partiel = Oui
 
-* 59 Ce temps partiel est-il voulu ou subi ? UNE r *votre_emploi_temps_partiel_subi*
+* 59 Ce temps partiel est-il voulu ou subi ? *votre_emploi_temps_partiel_subi* (2)
     - Voulu
     - Subi
 
-* 60 Quelle part de temps partiel réalisez-vous ? (Q.Ouverte) *votre_emploi_part_temps_partiel* (2)
+* 60 Quelle part de temps partiel réalisez-vous ? *votre_emploi_part_temps_partiel* (2) [V]
 
 **FINSI**
 
-* 61 Avez-vous le statut cadre ou assimilé ? UNE r
+* 61 Avez-vous le statut cadre ou assimilé ? *votre_emploi_statut_cadre* (136) [
     - Oui
     - Non
     - Travail à l'étranger (non concerné)
 
-* 62 Avez-vous des personnes sous votre responsabilité hiérarchique ? UNE r *votre_emploi_statut_cadre*
+* 62 Avez-vous des personnes sous votre responsabilité hiérarchique ? *votre_emploi_statut_cadre* [cat]
     - Oui
     - Non
 
 63 Avez-vous la responsabilité : Choisissez la réponse appropriée pour chaque élément :
 
-* d'un budget : *votre_emploi_responsabilite_budget*
+* d'un budget : *votre_emploi_responsabilite_budget* (136) [cat]
     - Oui
     - Non
-* d'un projet : *votre_emploi_responsabilite_projet* (135) 
+* d'un projet : *votre_emploi_responsabilite_projet* (135) [cat]
     - Oui
     - Non
-* d’une équipe : *votre_emploi_responsabilite_equipe* (135) 
+* d’une équipe : *votre_emploi_responsabilite_equipe* (135) [cat]
     - Oui
     - Non
 
 64 Utilisez-vous fréquemment les langues suivantes dans votre travail ?
 
-
-* Français : *votre_emploi_langues_francais* (145) 
+* Français : *votre_emploi_langues_francais* (145) [ord]
     - Quotidiennement
     - Souvent (plusieurs heures par semaine)
     - Rarement (quelques fois par mois)
     - Très rarement
     - Jamais
-* Anglais : *votre_emploi_langues_anglais* (140)
+* Anglais : *votre_emploi_langues_anglais* (140) [ord]
     - Quotidiennement
     - Souvent (plusieurs heures par semaine)
     - Rarement (quelques fois par mois)
     - Très rarement
     - Jamais
-* Allemand : *votre_emploi_langues_allemand* (129) 
+* Allemand : *votre_emploi_langues_allemand* (129) [ord]
     - Quotidiennement
     - Souvent (plusieurs heures par semaine)
     - Rarement (quelques fois par mois)
     - Très rarement
     - Jamais
-* Espagnol : *votre_emploi_langues_espagnol* (128) 
+* Espagnol : *votre_emploi_langues_espagnol* (128) [ord]
     - Quotidiennement
     - Souvent (plusieurs heures par semaine)
     - Rarement (quelques fois par mois)
     - Très rarement
     - Jamais
 
+* 65 Quelle(s) autre(s) langue(s) utilisez-vous ? *votre_emploi_langues_autres* (36) [V]
 
-* 65 Quelle(s) autre(s) langue(s) utilisez-vous ? (Qouverte) *votre_emploi_langues_autres* (36)
-
-* 66 Votre fonction est-elle liée à l'international ?UNE r *votre_emploi_fonction_international* (137) 
+* 66 Votre fonction est-elle liée à l'international ?UNE r *votre_emploi_fonction_international* (137) [ord]
     - Oui
     - Non
 
-* 67 Sur une échelle allant de 0 à 5, votre mission intègre-t-elle une dimension "Développement durable" ? (Q echelle) *votre_emploi_developpement_durable* (60)
+* 67 Sur une échelle allant de 0 à 5, votre mission intègre-t-elle une dimension "Développement durable" ? (Q echelle) *votre_emploi_developpement_durable* (60) [lik] (REM Bar chart)
     - 0 : votre mission n'intègre aucune dimension "Développement durable"
     - 5 : votre mission intègre une très forte dimension "Développement durable"
 
 
-68 Avez-vous le statut de consultant ? *votre_emploi_consultant* (134)  
-Veuillez sélectionner SEULEMENT UNE réponse
+68 Avez-vous le statut de consultant ? *votre_emploi_consultant* (134) [cat]
     - Oui
     - Non
 
-### Emploi: rémunération
+### Votre Emploi: rémunération
 
 * 69 Quelle est votre rémunération brute annuelle, hors primes, avantages en nature et gratifications (en euros) ? (ouverte num) *votre_emploi_remuneration_brut* (111) 
 
@@ -389,9 +428,9 @@ Veuillez sélectionner SEULEMENT UNE réponse
     - Téléphone portable
     - Autre
 
-* 72 Combien de temps a duré votre recherche d'emploi (en mois) (Q ouv num) *votre_emploi_temps_recherche* (65)  
+* 72 Combien de temps a duré votre recherche d'emploi (en mois) *votre_emploi_temps_recherche* (65) [num]
 
-* 73 Comment avez-vous trouvé cet emploi ? UNE réponse *votre_emploi_comment_trouver*
+* 73 Comment avez-vous trouvé cet emploi ? UNE réponse *votre_emploi_comment_trouver* [cat]
     - Stage de fin d'études
     - Stage année de césure
     - Apprenti : Embauché par l'entreprise d'apprentissage
@@ -412,7 +451,7 @@ Veuillez sélectionner SEULEMENT UNE réponse
 
 *FINSI*
 
-* 75 Quel a été votre principal critère dans le choix de cet emploi ? UNE réponse *votre_emploi_principal_critere* (138)
+* 75 Quel a été votre principal critère dans le choix de cet emploi ? UNE réponse *votre_emploi_principal_critere* (138) [cat]
     - L'adéquation avec votre projet professionnel
     - Le montant du salaire proposé
     - La notoriété de l'entreprise
@@ -425,14 +464,14 @@ Veuillez sélectionner SEULEMENT UNE réponse
 
 76 Estimez-vous que votre emploi correspond:
 
-* à votre niveau de qualification *votre_emploi_correspond_qualification* (140) 
+* à votre niveau de qualification *votre_emploi_correspond_qualification* (140) [cat]
     - Oui
     - Non
-* au secteur disciplinaire de votre formation *votre_emploi_correspond_secteur* (137)  
+* au secteur disciplinaire de votre formation *votre_emploi_correspond_secteur* (137)  [cat]
     - Oui
     - Non
 
-* 77 Globalement, sur une échelle allant de 1 à 5 (5 = très satisfait - 1 = peu satisfait), êtes-vous satisfait(e) de votre emploi actuel ? (echelle) *votre_emploi_satisfaction* (138) 
+* 77 Globalement, sur une échelle allant de 1 à 5 (5 = très satisfait - 1 = peu satisfait), êtes-vous satisfait(e) de votre emploi actuel ? (echelle) *votre_emploi_satisfaction* (138) [lik]
     - 5 - très satisfait
     - 4
     - 3
@@ -441,15 +480,25 @@ Veuillez sélectionner SEULEMENT UNE réponse
 
 78 Sur une échelle de 1 à 5 (1=peu satisfaisant - 5=très satisfaisant), comment jugeriez-vous les aspects suivants de votre emploi
 
-* vos conditions de travail *votre_emploi_note_conditions_travail* (138) 
-* vos relations avec vos collègues *votre_emploi_note_relations_collegues* (138) 
-* vos relations de travail avec votre hiérarchie  *votre_emploi_note_relations_hierarchie* (138)   
-* votre niveau de rémunération *votre_emploi_note_remuneration* (138)
+* vos conditions de travail *votre_emploi_note_conditions_travail* (138) [lik]
+* vos relations avec vos collègues *votre_emploi_note_relations_collegues* (138) [lik]
+* vos relations de travail avec votre hiérarchie  *votre_emploi_note_relations_hierarchie* (138)  [lik] 
+* votre niveau de rémunération *votre_emploi_note_remuneration* (138) [lik]
 
 * POUR FINIR ...
 -----------------
 
-Questions ouvertes.
+* 79-83 Questions ouvertes [V]\
+*pour_finir_complements_information* (34)          
+*pour_finir_jpo_titre* (0)                          
+*pour_finir_jpo* (152)                             
+*pour_finir_enseignement* (90)                      
+*pour_finir_enseignement_recus* (90)               
+*pour_finir_enseignements_absents* (83)             
+*pour_finir_coordonnees_personnelles_titre* (0)    
+*pour_finir_coordonnees_personnelles* (152)        
+
+**dont**
 
 * 81 Quels sont les enseignements qui vous semblent les plus utiles pour l'exercice de votre métier et votre insertion professionnelle ? *pour_finir_enseignement* (90)  
 
