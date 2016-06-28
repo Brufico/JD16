@@ -88,7 +88,9 @@ SUR VOTRE STAGE DE FIN D'ETUDES
 * 11 Avez-vous accepté cette proposition ? *stg_fin_etude_accepte* (83) **[cat]**
     - Oui
     - Non
- 
+
+* 12 Pour quelle(s) raison(s) avez-vous refusé cette proposition ? *stg_fin_etude_raison_refus* (29) **[V]** 
+
 
 SUR L'ENTREPRISE QUI VOUS A ACCUEILLI EN ALTERNANCE
 ---------------------------------------------------

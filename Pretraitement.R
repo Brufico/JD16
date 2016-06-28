@@ -519,6 +519,8 @@ p
 #' Sauvegardes des données prétraitées
 #' ===================================
 
+#' paramètres de sauvegarde
+
 # second data directory
 datadir2 <- "data2"
 if (!dir.exists(datadir2)) {dir.create(datadir2)}
@@ -526,11 +528,55 @@ if (!dir.exists(datadir2)) {dir.create(datadir2)}
 # files
 maindffile <- "maindf.csv"
 repdffile <- "repdf.csv"
-# paths
+
+# paths (cvs)
 maindfpath <- file.path(".", datadir2, maindffile)
 repdfpath <- file.path(".", datadir2, repdffile)
 
-# enregistrement
+suspectdfpath <- file.path(".", datadir2, "suspectdf.csv")
+verifdfpath <- file.path(".", datadir2, "verifdf.csv")
+corrigdfpath <- file.path(".", datadir2, "corrigdf.csv")
 
+# path(rda)
+classmaindfpath <- file.path(".", datadir2, "classmaindf.Rda")
+
+
+# vecteur des classes des colonnes des données principales
+classmaindf <- lapply(maindf, FUN = function(col) class(col))
+classmaindf <- unlist(classmaindf)
+
+
+#'
+#' sauvegarde en cvs
+#' -----------------
+#'
+
+# enregistrement des données et des tables de correction et de vérification sous forme cvs
 write.table(x = maindf, file = maindfpath, sep=";", row.names = FALSE)
 write.table(x = repdf, file = repdfpath, sep=";", row.names = FALSE)
+
+write.table(x = suspectdf, file = suspectdfpath, sep=";", row.names = FALSE)
+write.table(x = verifdf, file = verifdfpath, sep=";", row.names = FALSE)
+write.table(x = corrigdf, file = corrigdfpath, sep=";", row.names = FALSE)
+
+# enregistrement des classes des colonnes des données principales (Rda)
+save(classmaindf, file=classmaindfpath)
+
+
+#'
+#' Autre sauvegarde: enregistrer tout cela en .Rda
+#' ------------------------------------------------
+#'
+# path(rda)
+alldatapath <- file.path(".", datadir2, "alldata.Rda")
+
+# enregistrement (Rda)
+save( maindf,
+      repdf,
+      suspectdf,
+      verifdf,
+      corrigdf,
+      classmaindf,
+      file=alldatapath)
+
+

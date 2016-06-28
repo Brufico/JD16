@@ -38,14 +38,60 @@
 
 #
 # sum(fildfk$nom != maindfk$nom)
+#
+
+
+# sauvegarder sous forme rds ou Rda
+# ----------------------------------
+
+if (!dir.exists("dummydata")) {dir.create("dummydata")}
+
+dummydir <- "dummydata"
+exfnameRds <- "example.Rds"
+exfnameRda <- "example.Rda"
+exfpathRds <- file.path(".", dummydir, exfnameRds)
+exfpathRda <- file.path(".", dummydir, exfnameRda)
+
+
+file.create(exfpathRds)
+
+
+x <- 1:5
+
+save(x, file=exfpathRda)
+saveRDS(x, file=exfpathRds)
+rm(x)
+
+## ASSIGN USING readRDS
+new_x1 <- readRDS(file=exfpathRds)
+new_x1
+## [1] 1 2 3 4 5
+
+## 'ASSIGN' USING load -- note the result
+new_x2 <- load(exfpathRda)
+
+# loading in to  <environment: R_GlobalEnv
+new_x2
+# [1] "x"
+# # NOTE: `load()` simply returns the name of the objects loaded. Not the values.
+x
+##[1] 1 2 3 4 5
 
 
 
+# another experiment
+y <- 10:20
+x <- 1:5
 
+save(x,y, file=exfpathRda)
 
+rm(x)
+rm(y)
 
+x
+y
 
-
-
-
-
+ll <- load(exfpathRda)
+ll
+x
+y
