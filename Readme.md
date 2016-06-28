@@ -18,18 +18,33 @@ Résumé :
 Ce projet est le traitement de l'enquête jeunes diplômés 2015 (cad des diplomés dont la remise des deplômes a eu lieu le 27/05/2016
 
 Répertoires : 
-=======================
+=============
+
 Le répertoire de travail doit être le répertoire de l'enquête.
 
-arborescence des répertoires:
+Arborescence des répertoires:
 
-* workdir
-    - data
+* workdir = répertoire principal de l'enquête
+
+* répertoires de données
+    - data 
+      ~ répertoire de données initiales
     - data2
-    - tables de correspondance
+    ~ répertoire de données issues du prétraitement
     - Documents
-    - addcode
+    ~ documents initiaux: liste des questions d'enquête
+
+* répertoires d'outils
+    - tables de correspondance
+    ~ toutes tables de correspondance
+
+* répertoires de code
     - standardfunctions
+    ~ code des "fonctions standard d'analyse"
+    - addcode
+    ~ code additionnel
+    - rcode
+    ~ code principal de l'enquête
 
 
 Données
@@ -72,24 +87,23 @@ Stockées dans :
 * Nom fichier = "datajd0620+f.csv"
 
 
-Produits du prétraitement:
---------------------------
-
+Données issues du prétraitement:
+--------------------------------
 
 `maindf`
-  ~ Table de tous les diplômés
+~ Table de tous les diplômés
 
 `repdf`
-  ~ répondants uniquement
+~ répondants uniquement
 
 `classmaindf`
-  ~ colClasses pour maindf et repdf (enregistré en .Rda uniquement)
+~ colClasses pour maindf et repdf (enregistré en .Rda uniquement)
 
 `suspectdf`
-  ~ cas suspects rémunérations
+~ cas suspects rémunérations
 
 `verifdf`
-  ~ cas suspects rémunérations à vérifier
+~ cas suspects rémunérations à vérifier
 
 `corrigdf`
   ~ cas suspects rémunérations corrections faites
