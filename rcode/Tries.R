@@ -95,3 +95,61 @@ ll <- load(exfpathRda)
 ll
 x
 y
+
+x <- .03
+y <- .05
+z <- .1
+estsignif <- ifelse(x < y,"est", ifelse(x < z,"est peu", "n'est pas"))
+estsignif
+
+
+
+#==================================================================================
+#initialization for knitting
+#
+#' Loading packages and code
+#' ================
+
+library(dplyr)
+library(ggplot2)
+
+#' Sourcing more code
+#' ================
+#'
+# more code
+workdir <- getwd()
+#maindir <- ".."
+maindir <- workdir
+mcodir <- "addcode"
+code1name <- "utils.R"
+source(file.path(maindir ,mcodir, code1name))
+
+# more code :  standard functions
+stdfundir <- "standardfunctions"
+stdfunname <- "standardfunctionsV4.R"
+source(file.path(maindir, stdfundir, stdfunname))
+
+#'
+#' Récupération des données prétraitées
+#' ====================================
+#'
+
+# path(rda)
+datadir2 <- "data2"
+alldatapath <- file.path(maindir, datadir2, "alldata.Rda")
+# loading
+whatload <- load(alldatapath)
+# verification
+# whatload
+# -------------------------------------------------------------------
+
+verbatim("situation_etudes_intitule")
+
+res <- verbatim2("situation_etudes_intitule", bynomfact = "situation_etudes_etablissement")
+setresult('situation_etudes_intitule')
+
+
+numc <- length(nonavect(maindf[["situation_etudes_intitule"]]))
+
+sit <- verbatim(repdf, "situation_etudes_intitule" )
+sit$numcases

@@ -1,0 +1,269 @@
+---
+title: "Depouillement de l'enquête Jeunes diplômés Ipag 2015"
+author: "Bruno Fischer"
+date: "27 juin 2016"
+output:
+  word_document:
+    fig_caption: yes
+    fig_width: 7
+    toc: yes
+  html_document:
+    css: customex2.css
+    number_sections: yes
+    theme: readable
+subtitle: Dépouillement question par question, partie 1 = Données + Pour commencer
+---
+
+
+```{r init, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = FALSE)
+# opts_chunk$set(echo = FALSE, fig.width = 5, fig.height = 5)
+options(digits = 2, scipen = 7)
+# width + heights figures constants
+dkfigwidth <- 5
+dkfigheight <- 5
+lkfigwidth <- 8
+lkfigheight <- 7
+```
+
+
+```{r, warning=FALSE, include=FALSE}
+#' Loading packages and code
+#' ================
+
+library(dplyr)
+library(ggplot2)
+
+#' Sourcing more code
+#' ================
+#'
+# more code
+workdir <- getwd()
+maindir <- ".."
+mcodir <- "addcode"
+code1name <- "utils.R"
+source(file.path(maindir ,mcodir, code1name))
+
+# more code :  standard functions
+stdfundir <- "standardfunctions"
+stdfunname <- "standardfunctionsV4.R"
+source(file.path(maindir, stdfundir, stdfunname))
+
+```
+
+
+```{r getdata}
+#'
+#' Récupération des données prétraitées
+#' ====================================
+#'
+
+# path(rda)
+datadir2 <- "data2"
+alldatapath <- file.path(maindir, datadir2, "alldata.Rda")
+# loading
+whatload <- load(alldatapath)
+# verification
+# whatload
+```
+
+
+```{r getallresults}
+#'
+#' lecture des résultats de traitement
+#' ====================================
+#'
+
+# path(rda)
+datadir2 <- "data2"
+alldatapath <- file.path(maindir, datadir2, "alldata.Rda")
+# loading
+whatload <- load(alldatapath)
+# verification
+# whatload
+```
+
+
+
+
+
+Les données
+===========
+
+```{r studydata}
+# nombre de diplômés 
+ndip <- nrow(maindf)
+nfiliere =length(levels(maindf$filiere)) 
+nrep <- nrow(repdf)
+trep <- nrep / ndip
+
+```
+
+L'enquête Jeunes Diplômés 2015 a été administrée aux diplômés de la promotion 2015 en mai et juin 2016, par voie électronique, suivie d'une relance téléphonique.
+
+Les diplômés de la promotion étaient donc sur le marché du travail depuis environ 7 mois (le jury de diplôme ayant eu lieu en octobre)
+
+Les diplômés de la promotion 2015 sont au nombre de `r ndip`, répartis en `r nfiliere` filières de spécialisation et cursus de double diplôme.
+Le nombre de répondants à l'enquête est de `r nrep`, soit un taux de réponse de `r trep*100` %.
+
+```{r filierescomp, fig.height=lkfigheight, fig.widtht = lkfigwidth}
+# lkfigwidth
+# lkfigheight
+fpromo <- cat1(dataf=maindf, nomfact="filiere", useNA = "no",
+                                    orderfreq = TRUE,
+                                    rfreq = FALSE, digits = 2, cfill = "steelblue")
+
+
+maindf[["filiere"]] <- orderfact(maindf, nomfact="filiere", nlevels = fpromo$levels)
+repdf[["filiere"]] <- orderfact(repdf, nomfact="filiere", nlevels = fpromo$levels)
+
+t1 <- table(maindf$filiere)
+tdf <- as.data.frame(t1)
+t2 <- table(repdf$filiere)
+t2df <- as.data.frame(t2)
+
+tcomp <- full_join(tdf, t2df, "Var1")
+colnames(tcomp) <- c("filière", "Nombre de diplômés", "Nombre de répondants")
+
+# table :
+kable(tcomp, caption="Diplômés et répondants par spécialisation")
+
+# Graphique : faire un facteur et ordonner en sens inverse
+maindf$rep <- ifelse(maindf$repondant, "Répondant", "Nonrépondant")
+maindf$rep <- orderfact(maindf,"rep", nlevels = c("Répondant", "Nonrépondant"))
+# plot
+ggplot(maindf[which(!is.na(maindf[["filiere"]])), ], 
+       aes(filiere, fill = rep)) + geom_bar(position="stack")+
+        theme(axis.text.x = element_text(angle=90, hjust=1)) +
+        scale_fill_discrete(guide = guide_legend(title = "",reverse = TRUE))+
+        labs(x="", y= "Effectif", title= "Répondants par spécialisation" )
+
+# test
+set.seed(1000)
+pval <- chisq.test(x= tcomp[["Nombre de répondants"]], p=tcomp[["Nombre de diplômés"]], rescale.p = TRUE, simulate.p.value = TRUE)$p.value
+
+```
+
+La distribution des filières des répondants ne diffère pas significativement de celle des diplômés (p-valeur = `r 100* pval` %, obtenue par simulation)
+On peut donc considérer que l'échantillon des répondants n'a pas subi de biais de sélection lié à la spécialisation choisie.
+
+
+
+
+
+Depouillement question par question
+====================================
+
+
+POUR COMMENCER ....
+-------------------
+ 
+ (Questions NON Traitées statistiquement)\
+ 1 NOM\
+ 2 PRENOM\
+ COORDONNEES PERSONNELLES\
+ 3 ADRESSE\
+ 4 CODE POSTAL\
+ 5 VILLE\
+ 6 PAYS\
+ 7 TELEPHONE DOMICILE\
+ 8 TELEPHONE PORTABLE\
+ 9 E MAIL PERSONNEL (AUTRE QUE IPAG)\
+
+
+SUR VOTRE STAGE DE FIN D'ETUDES
+-------------------------------
+
+### Q10 Avez-vous reçu une proposition d’embauche de votre entreprise d'accueil à l’issue de votre stage de fin d'études ?{-}
+
+
+```{r stg_fin_etude_proposition}
+res <- cat1(dataf=maindf, nomfact="stg_fin_etude_proposition", useNA = "no",
+                                    orderfreq = FALSE,
+                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+Table des réponses:  
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%)
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent", title = "Proposition d'embauche en fin de stage ?")
+plot2
+
+```
+
+### 11 Avez-vous accepté cette proposition ? {-}
+[Répondez seulement à cette question si vous avez répondu 'Oui' à la question 'stg_fin_etude_proposition']
+
+```{r stg_fin_etude_accepte}
+res <- cat1(dataf=maindf, nomfact="stg_fin_etude_accepte", useNA = "no",
+                                    orderfreq = FALSE,
+                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+Table des réponses:  
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+La différence des fréquences est peu significative (Chi² : p-valeur = `r pval*100`%)
+
+```{r}
+plot2 <- plot + 
+        labs(x = " ", y = "Poucent", title = "Avez-vous accepté ?")
+plot2
+
+```
+
+### 12 Pour quelle(s) raison(s) avez-vous refusé cette proposition ? 
+[Répondez seulement à cette question si vous avez répondu 'Non' à la question 'stg_fin_etude_accepte']
+
+```{r}
+numc <- length(unique(nonavect(repdf$stg_fin_etude_raison_refus)))
+
+# ptable <- repdf %>%
+#         filter(!is.na(stg_fin_etude_raison_refus)) %>%
+#         select(stg_fin_etude_raison_refus)
+# colnames(ptable) <- "Raisons du refus"
+
+ptable <- verbatim2(repdf, "stg_fin_etude_raison_refus", "filiere")
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Raisons du refus")
+```
+
+```{r}
+
+```
+
+
+
+

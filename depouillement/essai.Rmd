@@ -1,0 +1,150 @@
+---
+title: "Essai1 file paths + figures dimension"
+author: "BFC"
+date: "28 juin 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## directories
+
+ 
+```{r dirs}
+workdir = getwd()
+maindir1 <- file.path(workdir, "..")
+maindir2 <- ".."
+
+targetdir <- "dummydata"
+targetfile <- "dummyfile"
+targetpath1 <- file.path(maindir1, targetdir, targetfile)
+targetpath1 <- file.path(maindir2, targetdir, targetfile)
+```
+
+
+dirs
+========
+
+the working dir is `r workdir`
+
+the main dir 1 is "`r maindir1`"
+
+the main dir 2 is "`r maindir2`"
+
+the target path 1 is "`r targetpath1`"
+
+the target path 2 is `r targetpath1`
+
+
+new tries
+============
+
+```{r}
+rdir <- "rcode"
+codresultat <- "coderesultats.R"
+codepath <- file.path(maindir2, rdir, codresultat)
+codepath
+
+# source(file.path(maindir1, rdirect, codresultat))
+# source(file.path(maindir2, rdir, codresultat))
+
+source(file.path(maindir2, rdir, "coderesultats.R"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tries with fig sizes (changing global opts)
+==============================================
+
+```{r}
+opts_chunk$set(fig.width=10)
+```
+
+
+```{r}
+opts_chunk$set(fig.width=2)
+# Our figure is 10 wide, not 2
+plot(1:1000)
+```
+
+```{r}
+# Our figure is 2 wide, not 10
+opts_chunk$set(fig.width=10)
+plot(1:1000)
+```
+
+
+
+tries with fig sizes (changing local chunks)
+======================
+
+
+```{r one,fig.width=10}
+# Our figure is 10 wide, not 2
+plot(1:1000)
+```
+
+```{r two, fig.width=2}
+# Our figure is 2 wide, not 10
+plot(1:1000)
+```
+
+limits:
+
+```{r five,fig.width=5}
+# Our figure is 5 wide
+plot(1:1000)
+```
+
+```{r six,fig.width=6}
+# Our figure is 6 wide
+plot(1:1000)
+```
+
+```{r seven,fig.width=7}
+# Our figure is 7 wide
+plot(1:1000)
+```
+
+```{r eight,fig.width=8}
+# Our figure is 8 wide
+plot(1:1000)
+```
+
+```{r nine,fig.width=9}
+# Our figure is 9 wide
+plot(1:1000)
+```
+
+
+```{r ten,fig.width=10}
+# Our figure is 10 wide
+plot(1:1000)
+```
+
+==> apparently in word, the limit is 6
+==> apparently in pdf, the limit is 6.5 to 7
+==> apparently in html, 10 is ok. No limit ?
+

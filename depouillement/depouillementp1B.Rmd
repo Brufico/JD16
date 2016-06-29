@@ -1,5 +1,5 @@
 ---
-title: "Dépouillement de l'enquête Jeunes diplômés Ipag 2015"
+title: "Depouillement de l'enquête Jeunes diplômés Ipag 2015"
 author: "Bruno Fischer"
 date: "27 juin 2016"
 output:
@@ -11,13 +11,13 @@ output:
     fig_caption: yes
     fig_width: 7
     toc: yes
-subtitle: 'Dépouillement question par question, partie 2 : ALTERNANCE +'
+subtitle: Dépouillement question par question, partie 1 = Données + Pour commencer
 ---
 
 
 ```{r init, include=FALSE}
 library(knitr)
-opts_chunk$set(echo = FALSE, warning = FALSE)
+opts_chunk$set(echo = FALSE)
 # opts_chunk$set(echo = FALSE, fig.width = 5, fig.height = 5)
 options(digits = 2, scipen = 7)
 # width + heights figures constants
@@ -39,16 +39,23 @@ library(ggplot2)
 #' ================
 #'
 # more code
-workdir <- getwd()
+# workdir <- getwd()
 maindir <- ".."
 mcodir <- "addcode"
 code1name <- "utils.R"
-source(file.path(maindir ,mcodir, code1name))
+source(file.path(maindir, mcodir, code1name))
 
 # more code :  standard functions
 stdfundir <- "standardfunctions"
 stdfunname <- "standardfunctionsV4.R"
 source(file.path(maindir, stdfundir, stdfunname))
+
+# more code: results storing and retrieving
+
+rdirect <- "rcode"
+codresultats <- "coderesultats.R"
+codepath <- file.path(maindir, rdirect, codresultats)
+source(file.path(maindir, rdirect, codresultats))
 
 ```
 
@@ -69,19 +76,181 @@ whatload <- load(alldatapath)
 ```
 
 
-Suite du dépouillement
-========================
+```{r getallresults}
+#'
+#' lecture des résultats de traitement
+#' ====================================
+#'
 
-SUR L'ENTREPRISE QUI VOUS A ACCUEILLI EN ALTERNANCE
-----------------------------------------------------
+# path(rda)
+datadir3 <- "data3"
+allresultspath <- file.path(maindir, datadir3, "allresults.Rda")
+message(getwd())
+message(allresultspath)
+# loading
+whatload <- load(allresultspath)
+# verification
+whatload
+```
+
+
+
+
+
+Les données
+===========
+
+```{r studydata}
+# nombre de diplômés 
+ndip <- nrow(maindf)
+nfiliere =length(levels(maindf$filiere)) 
+nrep <- nrow(repdf)
+trep <- nrep / ndip
+
+```
+
+L'enquête Jeunes Diplômés 2015 a été administrée aux diplômés de la promotion 2015 en mai et juin 2016, par voie électronique, suivie d'une relance téléphonique.
+
+Les diplômés de la promotion étaient donc sur le marché du travail depuis environ 7 mois (le jury de diplôme ayant eu lieu en octobre)
+
+Les diplômés de la promotion 2015 sont au nombre de `r ndip`, répartis en `r nfiliere` filières de spécialisation et cursus de double diplôme.
+Le nombre de répondants à l'enquête est de `r nrep`, soit un taux de réponse de `r trep*100` %.
+
+```{r filierescomp, fig.height=lkfigheight, fig.widtht = lkfigwidth}
+# lkfigwidth
+# lkfigheight
+fpromo <- cat1(dataf=maindf, nomfact="filiere", useNA = "no",
+                                    orderfreq = TRUE,
+                                    rfreq = FALSE, digits = 2, cfill = "steelblue")
+
+
+maindf[["filiere"]] <- orderfact(maindf, nomfact="filiere", nlevels = fpromo$levels)
+repdf[["filiere"]] <- orderfact(repdf, nomfact="filiere", nlevels = fpromo$levels)
+
+t1 <- table(maindf$filiere)
+tdf <- as.data.frame(t1)
+t2 <- table(repdf$filiere)
+t2df <- as.data.frame(t2)
+
+tcomp <- full_join(tdf, t2df, "Var1")
+colnames(tcomp) <- c("filière", "Nombre de diplômés", "Nombre de répondants")
+
+# table :
+kable(tcomp, caption="Diplômés et répondants par spécialisation")
+
+# Graphique : faire un facteur et ordonner en sens inverse les niveaux
+maindf$rep <- ifelse(maindf$repondant, "Répondant", "Nonrépondant")
+maindf$rep <- orderfact(maindf,"rep", nlevels = c("Répondant", "Nonrépondant"))
+# plot
+ggplot(maindf[which(!is.na(maindf[["filiere"]])), ], 
+       aes(filiere, fill = rep)) + geom_bar(position="stack")+
+        theme(axis.text.x = element_text(angle=90, hjust=1)) +
+        scale_fill_discrete(guide = guide_legend(title = "",reverse = TRUE))+
+        labs(x="", y= "Effectif", title= "Répondants par spécialisation" )
+
+# test
+set.seed(1000)
+pval <- chisq.test(x= tcomp[["Nombre de répondants"]], p=tcomp[["Nombre de diplômés"]], rescale.p = TRUE, simulate.p.value = TRUE)$p.value
+
+```
+
+La distribution des filières des répondants ne diffère pas significativement de celle des diplômés (p-valeur = `r 100* pval` %, obtenue par simulation)
+On peut donc considérer que l'échantillon des répondants représente bien l'ensemble des spécialisations.
+
+
+
+
+La fin d'études et les contacts avec le monde professionnel : Stage et Alternance
+=================================================================================
+
+
+Le stage de fin d'études 
+------------------------
+
+### Q10 Avez-vous reçu une proposition d’embauche de votre entreprise d'accueil à l’issue de votre stage de fin d'études ?{-}
+
+
+```{r stg_fin_etude_proposition}
+res <- getresult("stg_fin_etude_proposition")
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%)
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent", title = "Proposition d'embauche en fin de stage ?")
+plot2
+
+```
+
+### 11 Avez-vous accepté cette proposition ? {-}
+[Répondez seulement à cette question si vous avez répondu 'Oui' à la question 'stg_fin_etude_proposition']
+
+```{r stg_fin_etude_accepte}
+res <- getresult("stg_fin_etude_accepte")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+Table des réponses:  
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+La différence des fréquences est peu significative (Chi² : p-valeur = `r pval*100`%)
+
+```{r}
+plot2 <- plot + 
+        labs(x = " ", y = "Poucent", title = "Avez-vous accepté ?")
+plot2
+
+```
+
+### 12 Pour quelle(s) raison(s) avez-vous refusé cette proposition ? 
+[Répondez seulement à cette question si vous avez répondu 'Non' à la question 'stg_fin_etude_accepte']
+
+```{r}
+res <- getresult("stg_fin_etude_raison_refus")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Raisons du refus")
+```
+
+
+
+L'accès à l'emploi par l'Alternance
+-----------------------------------
 
 ### 13 Avez-vous suivi un cursus en alternance à l’IPAG ? {-}
 
 
 ```{r alternance_cursus}
-res <- cat1(dataf=maindf, nomfact="alternance_cursus", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+res <- getresult("alternance_cursus")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -109,10 +278,7 @@ plot2
 ### 14 Dans le cadre de cette alternance, quel type de contrat avez-vous signé ? {-} 
 
 ```{r}
-res <- cat1(dataf=maindf, nomfact="alternance_type", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
-
+res <- getresult("alternance_type")
 numc <- res$numcases
 ptable <- res$ptable
 colnames(ptable) <- c("Réponse", "Effectif", "%")
@@ -140,11 +306,8 @@ plot2
 ### 15 Avez-vous reçu une proposition d'embauche de la part de l'entreprise, à la fin de votre contrat en alternance ? {-}
 
 
-
 ```{r}
-res <- cat1(dataf=maindf, nomfact="alternance_proposition", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+res <- getresult("alternance_proposition")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -173,9 +336,7 @@ plot2
 
 
 ```{r}
-res <- cat1(dataf=maindf, nomfact="alternance_proposition", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+res <- getresult("alternance_proposition")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -204,9 +365,7 @@ plot2
 
 
 ```{r}
-res <- cat1(dataf=maindf, nomfact="alternance_pas_proposition", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+res <- getresult("alternance_pas_proposition")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -235,9 +394,7 @@ plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
 ### 18 Si vous avez eu une proposition d'embauche, Avez-vous accepté cette proposition ? {-} 
 
 ```{r}
-res <- cat1(dataf=maindf, nomfact="alternance_accepter", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+res <- getresult("alternance_accepter")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -262,13 +419,11 @@ plot2
 
 ```
 
-### Si vous avez refusé cette proposition, Pour quelle(s) raison(s)  ? {-} 
+### Si vous avez refusé cette proposition, Pour quelle raison  ? {-} 
 
 
 ```{r}
-res <- cat1(dataf=maindf, nomfact="alternance_refus", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+res <- getresult("alternance_refus")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -295,16 +450,14 @@ plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
 
 
 
-SITUATION ACTUELLE
-------------------
+Situation actuelle des diplômés
+===============================
 
 ### 20 Votre situation actuelle {-}
 
 
 ```{r}
-res <- cat1(dataf=maindf, nomfact="situation_situation", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+res <- getresult("situation_situation")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -334,14 +487,13 @@ plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
 
 ```
 
+Les diplômés qui effectuent un volontariat
+-------------------------------------------
 
 ### 21 Si vous êtes en activité professionnelle, êtes_vous volontaire (VIE, VIA) ? {-}
 
-
 ```{r}
-res <- cat1(dataf=maindf, nomfact="situation_volontariat", useNA = "no",
-                                    orderfreq = FALSE,
-                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+res <- getresult("situation_volontariat")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -411,6 +563,8 @@ plot2
 ```
 
 
+Les créateurs d'entreprise
+--------------------------
 
 ### 23 Si vous êtes en création d'entreprise, L'entreprise st-elle déjà en activité ? *
 
@@ -440,7 +594,6 @@ Il y a `r numc` répondants à cette question
 
 kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 ```
-<!-- -->
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
@@ -449,4 +602,5 @@ plot2 <- plot + labs(x = "", y = "Poucent")
 plot2
 
 ```
+
 

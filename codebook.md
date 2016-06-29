@@ -98,7 +98,7 @@ SUR L'ENTREPRISE QUI VOUS A ACCUEILLI EN ALTERNANCE
 * 13 Avez-vous suivi un cursus en alternance à l’IPAG ?  *alternance_cursus* (202) **[cat]**
     - Oui
     - Non
-* Dans le cadre de cette alternance, quel type de contrat avez-vous signé ? *alternance_type* (123) **[cat]**
+* 14 Dans le cadre de cette alternance, quel type de contrat avez-vous signé ? *alternance_type* (123) **[cat]**
     - Contrat d’apprentissage
     - Contrat de professionnalisation
 

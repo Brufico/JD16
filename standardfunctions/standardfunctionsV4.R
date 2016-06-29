@@ -114,7 +114,7 @@ make.result <- function(name = NULL,
                         table1 = NULL,
                         table2 = NULL,
                         table3 = NULL,
-                        ptable = NULL,
+                        ptable = NULL, # printable table
                         details = NULL, # additional info (mostly in table form)
                         chi2 = NULL,
                         anova = NULL,
@@ -447,6 +447,8 @@ cat1 <- function(dataf, nomfact, useNA = "no",
         # printable table
         ptb <- tbl[1:3]
         colnames(ptb) <- c(nomfact, "Freq.", "Rel.Freq")
+        # put relative freq in % units ***************************************Edit
+        ptb[[3]] <- 100 * ptb[[3]]
 
         # Goodness-of-Fit chi-square test for a uniform distribution
         uchisq <- try.chisq.test(tbl[["num"]])
@@ -629,6 +631,39 @@ num1c <- function(dataf, nomvar, usedensity = FALSE, plot_density = FALSE,
                      chi2 = uchisq,
                      plot = p)
 }
+
+#' verbatim + verbatim2  = list of text values ( as in "other..." answers)
+#' ---------------------------------------------------------------------
+
+#' REM: ~~No makeresult here for the time being~~
+
+verbatim <- function(dataf, nomfact, useNA = "no"){
+        dataf <- if (useNA == "no") {
+                dataf[which(!is.na(dataf[[nomfact]])), ]
+        } else {
+                dataf
+        }
+        numc <- length(nonavect(dataf[[nomfact]]))
+        ptable <- as.data.frame(dataf[[nomfact]])
+        colnames(ptable) <- "Verbatim"
+        make.result(ptable = ptable,
+                    numcases = numc)
+}
+
+#' verbatim2 lists another variable alongside to "explain" verbatims
+verbatim2 <- function(dataf, nomfact, bynomfact,  useNA = "no"){
+        dataf <- if (useNA == "no") {
+                dataf[which(!is.na(dataf[[nomfact]])), ]
+        } else {
+                dataf
+        }
+        numc <- length(nonavect(dataf[[nomfact]]))
+        ptable <- as.data.frame(dataf[order(dataf[[bynomfact]]), c(bynomfact, nomfact)])
+        colnames(ptable) <- c( bynomfact, "Verbatim")
+        make.result(ptable = ptable,
+                    numcases = numc)
+}
+
 
 
 
