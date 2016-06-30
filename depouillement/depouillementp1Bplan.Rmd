@@ -1,0 +1,832 @@
+---
+title: "Depouillement de l'enquête Jeunes diplômés Ipag 2015"
+author: "Bruno Fischer"
+date: "27 juin 2016"
+output:
+  html_document:
+    css: customex2.css
+    number_sections: yes
+    theme: readable
+  word_document:
+    fig_caption: yes
+    fig_width: 7
+    toc: yes
+subtitle: Dépouillement question par question
+---
+
+
+```{r init, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = FALSE)
+# opts_chunk$set(echo = FALSE, fig.width = 5, fig.height = 5)
+options(digits = 2, scipen = 7)
+# width + heights figures constants
+dkfigwidth <- 5
+dkfigheight <- 5
+lkfigwidth <- 8
+lkfigheight <- 7
+```
+
+
+```{r, warning=FALSE, include=FALSE}
+#' Loading packages and code
+#' ================
+
+library(dplyr)
+library(ggplot2)
+
+#' Sourcing more code
+#' ================
+#'
+# more code
+# workdir <- getwd()
+maindir <- ".."
+mcodir <- "addcode"
+code1name <- "utils.R"
+source(file.path(maindir, mcodir, code1name))
+
+# more code :  standard functions
+stdfundir <- "standardfunctions"
+stdfunname <- "standardfunctionsV4.R"
+source(file.path(maindir, stdfundir, stdfunname))
+
+
+# more code: results storing and retrieving 
+# ~~==> attention: efface (réinitialise) la liste des résultats de traitement~~
+
+rdirect <- "rcode"
+codresultats <- "funcoderesultats.R"
+codepath <- file.path(maindir, rdirect, codresultats)
+source(file.path(maindir, rdirect, codresultats))
+
+```
+
+
+```{r getdata}
+#'
+#' Récupération des données prétraitées
+#' ====================================
+#'
+
+# path(rda)
+datadir2 <- "data2"
+alldatapath <- file.path(maindir, datadir2, "alldata.Rda")
+# loading
+whatload <- load(alldatapath)
+# verification
+# whatload
+```
+
+
+```{r getallresults}
+#'
+#' lecture des résultats de traitement
+#' ====================================
+#'
+
+# path(rda)
+datadir3 <- "data3"
+allresultspath <- file.path(maindir, datadir3, "allresults.Rda")
+message(getwd())
+message(allresultspath)
+# loading
+whatload <- load(allresultspath)
+# verification
+whatload
+```
+
+
+
+
+
+Les données
+===========
+
+```{r studydata}
+# nombre de diplômés 
+ndip <- nrow(maindf)
+nfiliere =length(levels(maindf$filiere)) 
+nrep <- nrow(repdf)
+trep <- nrep / ndip
+
+```
+
+L'enquête Jeunes Diplômés 2015 a été administrée aux diplômés de la promotion 2015 en mai et juin 2016, par voie électronique, suivie d'une relance téléphonique.
+
+Les diplômés de la promotion étaient donc sur le marché du travail depuis environ 7 mois (le jury de diplôme ayant eu lieu en octobre)
+
+Les diplômés de la promotion 2015 sont au nombre de `r ndip`, répartis en `r nfiliere` filières de spécialisation et cursus de double diplôme.
+Le nombre de répondants à l'enquête est de `r nrep`, soit un taux de réponse de `r trep*100` %.
+
+```{r filierescomp, fig.height=lkfigheight, fig.widtht = lkfigwidth}
+# lkfigwidth
+# lkfigheight
+fpromo <- cat1(dataf=maindf, nomfact="filiere", useNA = "no",
+                                    orderfreq = TRUE,
+                                    rfreq = FALSE, digits = 2, cfill = "steelblue")
+
+
+maindf[["filiere"]] <- orderfact(maindf, nomfact="filiere", nlevels = fpromo$levels)
+repdf[["filiere"]] <- orderfact(repdf, nomfact="filiere", nlevels = fpromo$levels)
+
+t1 <- table(maindf$filiere)
+tdf <- as.data.frame(t1)
+t2 <- table(repdf$filiere)
+t2df <- as.data.frame(t2)
+
+tcomp <- full_join(tdf, t2df, "Var1")
+colnames(tcomp) <- c("filière", "Nombre de diplômés", "Nombre de répondants")
+
+# table :
+kable(tcomp, caption="Diplômés et répondants par spécialisation")
+
+# Graphique : faire un facteur et ordonner en sens inverse les niveaux
+maindf$rep <- ifelse(maindf$repondant, "Répondant", "Nonrépondant")
+maindf$rep <- orderfact(maindf,"rep", nlevels = c("Répondant", "Nonrépondant"))
+# plot
+ggplot(maindf[which(!is.na(maindf[["filiere"]])), ], 
+       aes(filiere, fill = rep)) + geom_bar(position="stack")+
+        theme(axis.text.x = element_text(angle=90, hjust=1)) +
+        scale_fill_discrete(guide = guide_legend(title = "",reverse = TRUE))+
+        labs(x="", y= "Effectif", title= "Répondants par spécialisation" )
+
+# test
+set.seed(1000)
+pval <- chisq.test(x= tcomp[["Nombre de répondants"]], p=tcomp[["Nombre de diplômés"]], rescale.p = TRUE, simulate.p.value = TRUE)$p.value
+
+```
+
+La distribution des filières des répondants ne diffère pas significativement de celle des diplômés (p-valeur = `r 100* pval` %, obtenue par simulation)
+On peut donc considérer que l'échantillon des répondants représente bien l'ensemble des spécialisations.
+
+
+
+
+L’accès à l’emploi par le contexte de la fin d'études  : Stage et Alternance
+=============================================================================
+
+
+L'accès à l'emploi par le stage de fin d'études 
+-----------------------------------------------
+
+### 10 Avez-vous reçu une proposition d’embauche de votre entreprise d'accueil à l’issue de votre stage de fin d'études ?{-}
+
+
+```{r stg_fin_etude_proposition}
+res <- getresult("stg_fin_etude_proposition")
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%)
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent", title = "Proposition d'embauche en fin de stage ?")
+plot2
+
+```
+
+### 11 Avez-vous accepté cette proposition ? {-}
+[Répondez seulement à cette question si vous avez répondu 'Oui' à la question 'stg_fin_etude_proposition']
+
+```{r stg_fin_etude_accepte}
+res <- getresult("stg_fin_etude_accepte")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+Table des réponses:  
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+La différence des fréquences est peu significative (Chi² : p-valeur = `r pval*100`%)
+
+```{r}
+plot2 <- plot + 
+        labs(x = " ", y = "Poucent", title = "Avez-vous accepté ?")
+plot2
+
+```
+
+### 12 Pour quelle(s) raison(s) avez-vous refusé cette proposition ? 
+[Répondez seulement à cette question si vous avez répondu 'Non' à la question 'stg_fin_etude_accepte']
+
+```{r}
+res <- getresult("stg_fin_etude_raison_refus")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Raisons du refus")
+```
+
+
+
+L'accès à l'emploi par l'Alternance
+-----------------------------------
+
+### 13 Avez-vous suivi un cursus en alternance à l’IPAG ? {-}
+
+
+```{r alternance_cursus}
+res <- getresult("alternance_cursus")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+### 14 Dans le cadre de cette alternance, quel type de contrat avez-vous signé ? {-} 
+
+```{r}
+res <- getresult("alternance_type")
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+### 15 Avez-vous reçu une proposition d'embauche de la part de l'entreprise, à la fin de votre contrat en alternance ? {-}
+
+
+```{r}
+res <- getresult("alternance_proposition")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+### 16 Est-ce pour poursuivre la mission sur laquelle vous avez travaillé pendant votre alternance ? {-}
+
+
+```{r}
+res <- getresult("alternance_proposition")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+### 17 Si vous n'avez pas eu de proposition d'embauche, savez-vous pour quelle(s) raison(s) ? {-}
+
+
+```{r}
+res <- getresult("alternance_pas_proposition")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
+
+```
+
+
+### 18 Si vous avez eu une proposition d'embauche, Avez-vous accepté cette proposition ? {-} 
+
+```{r}
+res <- getresult("alternance_accepter")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 
+
+```
+
+### Si vous avez refusé cette proposition, Pour quelle raison  ? {-}
+
+
+```{r}
+res <- getresult("alternance_refus")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
+
+```
+
+
+
+La situation actuelle des diplômés
+==================================
+
+
+### 20 Votre situation actuelle {-}
+
+```{r}
+res <- getresult("situation_situation")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+<!-- -->
+La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
+
+```
+
+Le volontariat
+==============
+
+### 21 Si vous êtes en activité professionnelle, êtes_vous volontaire (VIE, VIA) ? {-}
+
+```{r}
+res <- getresult("situation_volontariat")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+<!-- -->
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+### 22 Si vous êtes volontaire, De quel type de volontariat s'agit-il ? {-}
+
+
+```{r}
+res <- cat1(dataf=maindf, nomfact="situation_volontariat_type", useNA = "no",
+                                    orderfreq = FALSE,
+                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+<!-- -->
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+Les créateurs d'entreprise
+==========================
+
+### 23 Si vous êtes en création d'entreprise, L'entreprise st-elle déjà en activité ? {-}
+
+* Si l'entreprise en création est déjà en activité, vous serez considéré(e) comme étant vous-même en activité professionnelle.
+
+```{r}
+res <- cat1(dataf=maindf, nomfact="situation_creation_activite", useNA = "no",
+                                    orderfreq = FALSE,
+                                    rfreq = TRUE, digits = 2, cfill = "steelblue")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+Les diplômés en recherche d'emploi
+==================================
+
+### 24 Etes-vous à la recherche d'un emploi depuis la sortie de l'école ? {-}
+
+
+### 25 Depuis combien de temps êtes-vous à la recherche d'un emploi ? {-}
+
+
+### 26 Avez-vous refusé une ou plusieurs propositions d'emploi depuis ? {-}
+
+
+### 27 Combien de propositions d'emploi avez-vous refusé ? {-}
+
+
+### 28 Quelles difficultés rencontrez-vous dans votre recherche d'emploi ? {-}
+
+
+
+### 29 Précisez {-}
+
+
+
+
+Les diplômés en poursuite d’études
+==================================
+
+### 32 Quel type d'études poursuivez-vous ? {-}
+
+
+### 33 Dans quel établissement (nom et ville) êtes-vous inscrit(e) ? {-}
+
+
+### 34 Intitulé exact de la formation {-}
+
+
+### 35 Poursuivez-vous vos études en alternance ? {-}
+
+
+### 36 Pour quelle raison avez-vous principalement choisi de poursuivre des études ? {-}
+
+
+
+
+Les diplômés en activité professionnelle
+========================================
+
+
+Caractéristiques générales de l’emploi
+--------------------------------------
+
+### 37 Il s'agit d'un: {-}
+-1er emploi
+-2ème emploi ou plus depuis la sortie de l'école
+
+
+### 38 Sur cet emploi, vous êtes: {-}
+
+
+
+REM: aucune réponse n'est enregistrées pour le questions suivantes
+39 Avez-vous un statut de
+40 Vous êtes chef d'entreprise, en êtes-vous
+41 Combien de temps avez-vous mis pour trouver cet emploi ou créer votre entreprise à la sortie de l'école ?
+42 Depuis combien de temps occupez-vous cet emploi ?
+
+
+L'entreprise
+------------
+
+REM: Questions 43 à 50 : pas de traitement statistique
+
+### 50 Secteur d'activité de votre entreprise {-}
+
+
+### 51 Quel est le principal secteur d'activité dans lequel votre entreprise (bureau d'études, société de conseil) vous conduit à intervenir le plus souvent ? {-}
+
+
+### 52 Quelle est la taille de l'entreprise (ou du groupe si l'entreprise appartient à un groupe) dans laquelle vous travaillez ? {-}
+
+
+
+Fonction et contrat
+-------------------
+
+
+
+
+### 54 Quelle est votre activité principale ? {-}
+
+
+### 53 Quelle est votre fonction précise ? {-}
+
+(REM: ordre des question 53-54 inversé)
+
+
+
+
+### 55 Quel est votre contrat de travail ? {-}
+
+
+REM: 56 Quand a débuté votre contrat de travail ? Entrez une date :==> non traitable
+
+
+### 57 (si votre contrat est un CDD) Quelle est la durée de votre CDD (en nombre de mois)  ? {-}
+
+
+
+### 58 Travaillez-vous à temps partiel ? {-}
+
+
+
+### 59 (si vous êtes à temps partiel) Ce temps partiel est-il voulu ou subi ? {-}
+
+
+
+### 60 (si vous êtes à temps partiel) Quelle part de temps partiel réalisez-vous ? {-}
+
+
+
+Statut et responsabilité
+------------------------
+
+### 61 Avez-vous le statut cadre ou assimilé ? {-}
+
+
+### 62 Avez-vous des personnes sous votre responsabilité hiérarchique ? {-}
+
+
+### 63 Avez-vous la responsabilité d'un budget, d'un projet , d’une équipe ? {-}
+Choisissez la réponse appropriée pour chaque élément :
+
+
+
+Les langues et l'international
+------------------------------
+
+### 64 Utilisez-vous fréquemment les langues suivantes dans votre travail ? {-}
+- Français : 
+- Anglais : 
+- Allemand :
+- Espagnol :
+
+
+### 65 Quelle(s) autre(s) langue(s) utilisez-vous ? Écrivez votre réponse ici : {-}
+
+
+### 66 Votre fonction est-elle liée à l'international ? {-}
+
+
+
+Autres caractéristiques de l'activité
+-------------------------------------
+
+### 67 Sur une échelle allant de 0 à 5, votre mission intègre-t-elle une dimension "Développement durable" ? {-}
+
+
+### 68 Avez-vous le statut de consultant ? {-}
+
+
+
+
+La rémunération
+-----------------------------------
+
+### Rémunération totale (brute) annuelle {-}
+(résultant des questions 69-71)
+69 Quelle est votre rémunération brute annuelle, hors primes, avantages en nature et gratifications (en euros) ?
+70 Pouvez-vous estimer votre rémunération variable annuelle : primes, participation, intéressement, … (en Euros)
+REM : 71 Disposez-vous d'avantages en nature ? aucune réponse
+
+
+
+### Part variable de la rémunération {-}
+
+
+
+
+La recherche de l'emploi
+------------------------
+
+### 72 Combien de temps a duré votre recherche d'emploi (en mois) ? {-}
+
+### 73 Comment avez-vous trouvé cet emploi ? {-}
+
+### 74 Pouvez-vous préciser le site spécialisé ? (si vous avez trouvé cet emploi de cette façon) {-}
+
+
+
+
+L'appréciation du poste par les diplômés
+----------------------------------------
+
+### 75 Quel a été votre principal critère dans le choix de cet emploi ? {-}
+
+
+### 76 Estimez-vous que votre emploi correspond à votre niveau de qualification ? au secteur disciplinaire de votre formation ? {-}
+
+
+
+### 77 Globalement, sur une échelle allant de 1 à 5 (5 = très satisfait - 1 = peu satisfait), êtes-vous satisfait(e) de votre emploi actuel ? Veuillez sélectionner SEULEMENT UNE réponse
+
+### 78 Sur une échelle de 1 à 5 (1=peu satisfaisant - 5=très satisfaisant), comment jugeriez-vous les aspects suivants de votre emploi  {-}
+
+-vos conditions de travail 
+-vos relations avec vos collègues
+-vos relations de travail avec votre hiérarchie
+-votre niveau de rémunération
+
+
+
+L'opinion des diplômés sur certains éléments de leur formation
+==============================================================
+
+
+### 81 Quels sont les enseignements qui vous semblent les plus utiles pour l'exercice de votre métier et votre insertion professionnelle ? {-}
+
+
+### 82 Parmi les enseignements reçus, quels sont ceux qui mériteraient d'être approfondis ou renforcés ? {-}
+
+
+### 83 Quels sont les enseignements, absents de votre formation, qui vous auraient été utiles ? {-}
+
+
+

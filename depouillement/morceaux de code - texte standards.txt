@@ -1,0 +1,129 @@
+~_____________________________________________________________________________________
+CAT chunk
+
+
+```{r}
+res <- getresult("xxxxxxxxxxxxxxxx")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+___________________________________________________________________________________________
+VERBATIM
+
+```{r}
+res <- getresult("xxxxxxxxxxxxxxxx")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Réponses")
+```
+_____________________________________________________________________________________
+NUMERIC
+
+```{r}
+res <- getresult("xxxxxxxxxxxxxxxx")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sm2) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+----------------------------------------------------------------------------------------------------
+NUM1CONT
+
+```{r}
+res <- getresult("xxxxxxxxxxxxxxxx")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("classe", "valeur centrale","Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "rémunération annuelle brute", y = "effectif")
+plot2
+
+```
+
+
+
+

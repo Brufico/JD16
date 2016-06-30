@@ -339,12 +339,14 @@ orderfact <- function(dataf, nomfact, orderfreq = TRUE, orderdesc = TRUE,
                                               1, 0))
                         ordervar <- "c..nt"
                 }
-                # r?ordonner le facteur
-                xx <- dataf[[nomfact]]
-                xxx <- direction * dataf[[ordervar]]
-                resfact <- reorder(xx, xxx, orderfun, na.rm = TRUE)
-
-
+                # reordonner le facteur
+                if (orderfreq) {
+                        xx <- dataf[[nomfact]]
+                        xxx <- direction * dataf[[ordervar]]
+                        resfact <- reorder(xx, xxx, orderfun, na.rm = TRUE)
+                } else {
+                        resfact <- dataf[[nomfact]]
+                }
         } else {
                 resfact <- factor(dataf[,nomfact], levels = nlevels)
         }
@@ -422,7 +424,7 @@ cat1 <- function(dataf, nomfact, useNA = "no",
                  orderfreq = sfdefault("orderfreq"),
                  orderdesc = TRUE, ordervar = "c..nt",
                  orderval = NA, orderfun = sum,
-                 rfreq = TRUE,
+                 rfreq = TRUE, dotest = TRUE,
                  digits = 2, cfill = sfdefault("filldefault")) {
         # useNA = "always, "ifany" or "no",
         # orderfreq = TRUE  or FALSE,
@@ -451,7 +453,9 @@ cat1 <- function(dataf, nomfact, useNA = "no",
         ptb[[3]] <- 100 * ptb[[3]]
 
         # Goodness-of-Fit chi-square test for a uniform distribution
-        uchisq <- try.chisq.test(tbl[["num"]])
+        if (dotest) {uchisq <- try.chisq.test(tbl[["num"]])
+        } else {uchisq <- NULL
+        }
 
         # bar chart with ggplot2
         # the data
@@ -607,7 +611,7 @@ num1c <- function(dataf, nomvar, usedensity = FALSE, plot_density = FALSE,
                 class = clabs,
                 center = tb$x,
                 freq = tb$count,
-                rfreq = tb$rfreq
+                rfreq = tb$rfreq * 100
         )
 
         # Uniform Chi2 test

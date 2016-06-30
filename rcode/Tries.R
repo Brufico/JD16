@@ -153,3 +153,72 @@ numc <- length(nonavect(maindf[["situation_etudes_intitule"]]))
 
 sit <- verbatim(repdf, "situation_etudes_intitule" )
 sit$numcases
+
+
+res <- cat1(dataf=maindf, nomfact="votre_emploi_temps_partiel_subi", useNA = "no", orderfreq = FALSE)
+getresult('votre_emploi_temps_partiel_subi')
+
+# -------------------------------------------------------------------
+
+ggplot(repdf)+
+        geom_bar(aes(x=votre_emploi_langues_francais)) +
+        geom_bar(aes(x=votre_emploi_langues_anglais)) +
+        geom_bar(aes(x=votre_emploi_langues_allemand)) +
+        geom_bar(aes(x=votre_emploi_langues_espagnol)) +
+        position_dodge()
+
+library(reshape2)
+
+lngdf <-  data.frame(repdf[c("nom","votre_emploi_langues_francais", "votre_emploi_langues_anglais",
+                             "votre_emploi_langues_allemand", "votre_emploi_langues_espagnol")])
+
+colnames(lngdf) <- c("nom","francais", "anglais", "allemand", "espagnol")
+
+
+
+mldf <- melt(lngdf, id="nom")
+mldf <- filter(mldf, !is.na(value))
+
+mldf$value <- orderfact(dataf = mldf, "value", nlevels = levels(repdf$votre_emploi_langues_francais))
+
+ggplot(mldf)+
+        geom_bar(aes(x=value)) +
+        facet_grid(variable ~ .) +
+        theme(axis.text.x = element_text(angle=30, hjust=1))
+#--------------------------------------------------------------------------------------------------
+
+res <- num1c(dataf=repdf, nomvar = "votre_emploi_remuneration_total")
+setresult('votre_emploi_remuneration_total')
+getresult('votre_emploi_remuneration_total')
+
+summary(repdf$votre_emploi_remuneration_total)
+summary(maindf$votre_emploi_remuneration_total)
+
+nclass.FD(nonavect(repdf$votre_emploi_remuneration_total))
+ggplot(repdf, aes(votre_emploi_remuneration_total)) +
+        geom_histogram( breaks=seq(14000,100000, by=4000), closed="left")
+
+seq(14000,96000, by=3000)
+
+
+#--------------------------------------------------------------------
+nclass.Sturges(nonavect(repdf$votre_emploi_remuneration_part_variable))
+ggplot(repdf, aes(votre_emploi_remuneration_part_variable))+geom_histogram(breaks=seq(0,40, by=5), closed="left")
+
+summary(repdf$votre_emploi_remuneration_part_variable)
+
+pretty(repdf$votre_emploi_remuneration_part_variable, 8)
+
+
+
+#----------------------------------------------------------------------------------------------
+str(maindf$votre_emploi_satisfaction)
+
+str(maindf$votre_emploi_note_conditions_travail)
+str(maindf$votre_emploi_note_relations_collegues)
+str(maindf$votre_emploi_note_relations_hierarchie)
+str(maindf$votre_emploi_note_remuneration)
+
+
+
+

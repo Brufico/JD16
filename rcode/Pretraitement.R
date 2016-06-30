@@ -208,6 +208,17 @@ rm(factname, factname_lik)
 
 
 
+
+# 67 Sur une échelle allant de 0 à 5, ... "Développement durable" ==> correction de 2 valeurs
+#
+vec5 <- which(maindf$votre_emploi_developpement_durable == (-5))
+maindf[vec5, "votre_emploi_developpement_durable"] <- 5
+
+vec1 <- which(maindf$votre_emploi_developpement_durable == -1)
+maindf[vec1, "votre_emploi_developpement_durable"] <- 1
+
+
+
 #' ### Correspondance Secteurs - Secteurs pour L'Etudiant
 
 # création de la table
@@ -360,9 +371,15 @@ colnames(corrigdf0) <- c(colnames(suspectdf)," corr.brut", "corr.variable")
 colnames(corrigdf1) <- c(colnames(suspectdf)," corr.brut", "corr.variable")
 
 
-# fonctions de vérifications/corrections
+# fonctions de vérifications/corrections l'argument est soit le rang dans la table (peu sur), soit le nom
 rmverifier <- function(i) {
-        j <- suspectdf[i,1]
+        if (is.numeric(i)) {
+                j <- suspectdf[i,1]
+        } else if (is.character(i)) {
+                i <- which(suspectdf$nom == i)
+                j <- suspectdf[i,1]
+        } else {warning("MAUVAIS argument de correction", call. = TRUE)}
+
         # message(paste0("verif ",j) ) #dbg
         maindf[j, "votre_emploi_remuneration_brut"] <<- NA
         maindf[j, "votre_emploi_remuneration_variable"] <<- NA
@@ -371,7 +388,14 @@ rmverifier <- function(i) {
 }
 
 rmcorriger <- function(i, corbrut = NULL, corvar = NULL, lcorrig = corrigdf1) {
-        j <- suspectdf[i,1] # index dans maindf
+        if (is.numeric(i)) {
+                j <- suspectdf[i,1]
+        } else if (is.character(i)) {
+                i <- which(suspectdf$nom == i)
+                j <- suspectdf[i,1]
+        } else {warning("MAUVAIS argument de correction", call. = TRUE)}
+
+        # j = index dans maindf
         # message(paste0("corr ",j) )
         if (!is.null(corbrut)) {maindf[j, "votre_emploi_remuneration_brut"] <<- corbrut} # effet de bord
         if (!is.null(corvar)) {maindf[j, "votre_emploi_remuneration_variable"] <<- corvar} # effet de bord
@@ -388,6 +412,12 @@ rmcorriger <- function(i, corbrut = NULL, corvar = NULL, lcorrig = corrigdf1) {
 }
 
 rmaccepter <- function(i, lcorrig=corrigdf0) {
+        if (is.numeric(i)) {
+                # nothing
+        } else if (is.character(i)) {
+                i <- which(suspectdf$nom == i)
+        } else {warning("MAUVAIS argument de correction", call. = TRUE)}
+
         for (k in 1:5) {lcorrig[1,k] <- suspectdf[i,k]}
         lcorrig[1,6] <- NA
         lcorrig[1,7] <- NA
@@ -395,54 +425,103 @@ rmaccepter <- function(i, lcorrig=corrigdf0) {
 }
 
 # exécution des vérifications/corrections
-rmverifier(1)
-rmverifier(2)
-rmverifier(3)
-rmverifier(4)
-rmverifier(5)
-rmcorriger(6, 24000, 12000) # PANTIN          ANTOINE  ==> confusion total /variable !!!!!!!!!!!!!
-rmverifier(7) #BELLONI            Lorna
-rmcorriger(8, 28000, 7000) #TULPAIN  Paul-Arnaud c0nfusion Euro/keuro
-rmverifier(9)
-rmcorriger(10, 34000) # HENRY  Romuald ordre de grandeur: 340 000 ==> 34000
-rmaccepter(11)
-rmverifier(12)
-rmcorriger(13, 28000, NULL) #FROMANTIN Thibaut 28/ 28000
-rmverifier(14)
-rmverifier(15)
-rmcorriger(16, 28000, 2000)
-rmcorriger(17, 32000, 0) # LE SCEL            Manon
-rmcorriger(18, 23328, 28000 - 23328) # FREVAL           Victor==> confusion total /variable + interversion
-rmcorriger(19, NULL , 38000 - 35100) # LISNARD           Sophie
-rmcorriger(20, NULL , 0) # FREITAS ROCHA         Caroline ==> répétition même nombre
-rmcorriger(21, 25000 , 31000 - 25000) #LAGOMANZINI             Tony
-rmcorriger(22, NULL , 42000 - 35000) #YASSINE             Dany
-rmcorriger(23, 42000 , 0) # BEAUCARNOT         Emmanuel
-rmcorriger(24, 37000 , 0) # MAZEAUD         Bertrand
-rmcorriger(25, 24000 , 2000) # CABANES-TARCHER        Alexandre
-rmaccepter(26)
-rmcorriger(27, 40000 , 5000) # CHAOUACHI            Sarah
-rmcorriger(28, NULL , 2000) # JEGOU           Pierre
-rmcorriger(29, 36000 , 2000) #GUAY        Charlotte
-rmcorriger(30, 30000 , 10000) # GUILLOREL          Pauline
-rmcorriger(31, NULL , 3600)# MASSAFERRO              Ugo
-rmcorriger(32, NULL , 39780 - 30600)# LY          Sophany
-rmcorriger(33, NULL , 10000) #STRAZEL            Régis
-rmcorriger(34, NULL , 34000 - 28000)#  POUJOIS          Jessica
-rmcorriger(35, NULL , 1000) # LE BOUSSE            Julie
-rmcorriger(36, NULL , 0) #DUCROT        Alexandra
-rmcorriger(37, 20000 , 16000) #SUBIRA-PUIG           Arthur
-rmcorriger(38, NULL , 2000)
-rmcorriger(39, NULL , 0)
-rmcorriger(40, NULL , 8000)
-rmcorriger(41, NULL , 2000)
-rmcorriger(42, NULL , 4000)
-rmcorriger(43, 37000 , 0)
-rmcorriger(44, NULL , 2000)
-rmcorriger(45, NULL , 6000)
-rmaccepter(46)
-rmverifier(47)
+# rmverifier(1) #  LEGER           Viviane
+# rmverifier(2) # WIEDMEIER             Julia
+# rmverifier(3) # FERNANDEZ GONZALEZ            Raquel
+# rmverifier(4) # BAYONA VÉLEZ  Francisco Javier
+# rmverifier(5) # RUEDA CASTILLO Natalia Margarita
+# rmverifier(6) # ARGENCE         Charlotte
+# rmcorriger(7, 24000, 12000) # PANTIN          ANTOINE  ==> confusion total /variable !!!!!!!!!!!!!
+# rmverifier(8) # BELLONI            Lorna
+# rmcorriger(9, 28000, 7000) #TULPAIN  Paul-Arnaud c0nfusion Euro/keuro
+# rmverifier(10) # ROUBY           Nicolas
+# rmcorriger(11, 34000) # HENRY  Romuald ordre de grandeur: 340 000 ==> 34000
+# rmaccepter(12) # JACQUILLAT        Enguerrand
+# rmverifier(12) # BALTHAZAR          Valentin
+# rmcorriger(13, 28000, NULL) #FROMANTIN Thibaut 28/ 28000
+# rmverifier(14) #
+# rmverifier(15)
+# rmcorriger(16, 28000, 2000)
+# rmcorriger(17, 32000, 0) # LE SCEL            Manon
+# rmcorriger(18, 23328, 28000 - 23328) # FREVAL           Victor==> confusion total /variable + interversion
+# rmcorriger(19, NULL , 38000 - 35100) # LISNARD           Sophie
+# rmcorriger(20, NULL , 0) # FREITAS ROCHA         Caroline ==> répétition même nombre
+# rmcorriger(21, 25000 , 31000 - 25000) #LAGOMANZINI             Tony
+# rmcorriger(22, NULL , 42000 - 35000) #YASSINE             Dany
+# rmcorriger(23, 42000 , 0) # BEAUCARNOT         Emmanuel
+# rmcorriger(24, 37000 , 0) # MAZEAUD         Bertrand
+# rmcorriger(25, 24000 , 2000) # CABANES-TARCHER        Alexandre
+# rmaccepter(26)
+# rmcorriger(27, 40000 , 5000) # CHAOUACHI            Sarah
+# rmcorriger(28, NULL , 2000) # JEGOU           Pierre
+# rmcorriger(29, 36000 , 2000) #GUAY        Charlotte
+# rmcorriger(30, 30000 , 10000) # GUILLOREL          Pauline
+# rmcorriger(31, NULL , 3600)# MASSAFERRO              Ugo
+# rmcorriger(32, NULL , 39780 - 30600)# LY          Sophany
+# rmcorriger(33, NULL , 10000) #STRAZEL            Régis
+# rmcorriger(34, NULL , 34000 - 28000)#  POUJOIS          Jessica
+# rmcorriger(35, NULL , 1000) # LE BOUSSE            Julie
+# rmcorriger(36, NULL , 0) #DUCROT        Alexandra
+# rmcorriger(37, 20000 , 16000) #SUBIRA-PUIG           Arthur
+# rmcorriger(38, NULL , 2000)
+# rmcorriger(39, NULL , 0)
+# rmcorriger(40, NULL , 8000)
+# rmcorriger(41, NULL , 2000)
+# rmcorriger(42, NULL , 4000)
+# rmcorriger(43, 37000 , 0)
+# rmcorriger(44, NULL , 2000)
+# rmcorriger(45, NULL , 6000)
+# rmaccepter(46)
+# rmverifier(47)
 
+rmverifier("LEGER") #  LEGER           Viviane
+rmverifier("WIEDMEIER") # WIEDMEIER             Julia
+rmverifier("FERNANDEZ GONZALEZ") # FERNANDEZ GONZALEZ            Raquel
+rmverifier("BAYONA VÉLEZ") # BAYONA VÉLEZ  Francisco Javier
+rmverifier("RUEDA CASTILLO") # RUEDA CASTILLO Natalia Margarita
+rmverifier("ARGENCE") # ARGENCE         Charlotte
+rmcorriger("PANTIN", 24000, 12000) # PANTIN          ANTOINE  ==> confusion total /variable !!!!!!!!!!!!!
+rmverifier("BELLONI") # BELLONI            Lorna
+rmcorriger("TULPAIN", 28000, 7000) #TULPAIN  Paul-Arnaud c0nfusion Euro/keuro
+rmverifier("ROUBY") # ROUBY           Nicolas
+rmcorriger("HENRY", 34000) # HENRY  Romuald ordre de grandeur: 340 000 ==> 34000
+rmaccepter("JACQUILLAT") # JACQUILLAT        Enguerrand
+rmverifier("BALTHAZAR") # BALTHAZAR          Valentin
+rmcorriger("FROMANTIN", 28000, NULL) #FROMANTIN Thibaut 28/ 28000
+rmverifier("LOPEZ") #LOPEZ          Laetitia
+rmverifier("RENAULT") #RENAULT            Mégane
+rmcorriger("NAITHE", 28000, 2000) #NAITHE            Sandra
+rmcorriger("LE SCEL", 32000, 0) # LE SCEL            Manon
+rmcorriger("FREVAL", 23328, 28000 - 23328) # FREVAL           Victor==> confusion total /variable + interversion
+rmcorriger("LISNARD", NULL , 38000 - 35100) # LISNARD           Sophie
+rmcorriger("FREITAS ROCHA", NULL , 0) # FREITAS ROCHA         Caroline ==> répétition même nombre
+rmcorriger("LAGOMANZINI", 25000 , 31000 - 25000) #LAGOMANZINI             Tony
+rmcorriger("YASSINE", NULL , 42000 - 35000) #YASSINE             Dany
+rmcorriger("BEAUCARNOT", 42000 , 0) # BEAUCARNOT         Emmanuel
+rmcorriger("MAZEAUD", 37000 , 0) # MAZEAUD         Bertrand
+rmcorriger("CABANES-TARCHER", 24000 , 2000) # CABANES-TARCHER        Alexandre
+rmaccepter("SENAL") #SENAL            Astrid
+rmcorriger("CHAOUACHI", 40000 , 5000) # CHAOUACHI            Sarah
+rmcorriger("JEGOU", NULL , 2000) # JEGOU           Pierre
+rmcorriger("GUAY", 36000 , 2000) #GUAY        Charlotte
+rmcorriger("GUILLOREL", 30000 , 10000) # GUILLOREL          Pauline
+rmcorriger("MASSAFERRO", NULL , 3600)# MASSAFERRO              Ugo
+rmcorriger("LY", NULL , 39780 - 30600)# LY          Sophany
+rmcorriger("STRAZEL", NULL , 10000) #STRAZEL            Régis
+rmcorriger("POUJOIS", NULL , 34000 - 28000)#  POUJOIS          Jessica
+rmcorriger("LE BOUSSE", NULL , 1000) # LE BOUSSE            Julie
+rmcorriger("DUCROT", NULL , 0) #DUCROT        Alexandra
+rmaccepter("SUBIRA-PUIG") #SUBIRA-PUIG           Arthur
+rmcorriger("MARAUD", NULL , 2000) # MARAUD            Céline
+rmcorriger("CLOSSET", NULL , 0) # CLOSSET           Mathieu
+rmcorriger("RIGALDIE", NULL , 8000) #RIGALDIE            Julian
+rmcorriger("DALE", NULL , 2000) #DALE             Laura
+rmcorriger("RAIMBAULT", NULL , 4000) #RAIMBAULT         Cassandre
+rmcorriger("BELLIARD", 37000 , 0) #BELLIARD           Edouard
+rmcorriger("LESPIAUCQ", NULL , 2000) #LESPIAUCQ            Sophie
+rmcorriger("LE BIHAN", NULL , 6000) #LE BIHAN Marie
+rmaccepter("MEAL") #MEAL
+rmverifier("POYATOS") #POYATOS
 # voir les tables ??
 # corrigdf
 # verifdf
@@ -451,7 +530,7 @@ rmverifier(47)
 #' Création de la variable remuneration_totale
 #' -------------------------------------------
 #'
-#'
+
 maindf <-
 within(maindf,{
         votre_emploi_remuneration_total <-
@@ -468,15 +547,48 @@ within(maindf,{
 
 
 #'
-#' Suite du nettoyage des données
-#' ------------------------------
+#' Création de la variable votre_emploi_remuneration_part_variable
+#' ---------------------------------------------------------------
 #'
 
-# semble ok pour l'instant
+maindf <-
+        within(maindf,{
+                votre_emploi_remuneration_part_variable <-
+                        ifelse(is.na(votre_emploi_remuneration_brut) &
+                                       is.na(votre_emploi_remuneration_variable),
+                               NA,
+                               ifelse(is.na(votre_emploi_remuneration_brut),
+                                      100,
+                                      ifelse(is.na(votre_emploi_remuneration_variable),
+                                             NA,
+                                             100 * votre_emploi_remuneration_variable /
+                                                     votre_emploi_remuneration_total
+                                      )))
+        } )
 
 
 
+# Traitement pb de saisie de nombre et détection de  problèmes pour le délai de recherche (72)
+# --------------------------------------------------------------------------------------------
+#
+# la variable a été lue comme un facteur, avec des aberrations
+# conversion en texte
+fn <- as.character(maindf$votre_emploi_temps_recherche)
+# elimination du texte parasite ("-", " mois")
+fn <-  gsub(" mois", replacement = "", x = fn)
+fn <-  gsub("-", replacement = "", x = fn)
 
+# conversion en nombre
+fn <- as.numeric(fn)
+
+# ecrasement de la valeur aberrante 24 mois
+fn[fn ==24.0] <- NA
+# summary(fn)
+
+# réinjection dans la dataframe
+maindf$votre_emploi_temps_recherche <- fn
+# verification
+# str(maindf$votre_emploi_temps_recherche)
 
 
 #' Eléments sur la structure de l'échantillon
