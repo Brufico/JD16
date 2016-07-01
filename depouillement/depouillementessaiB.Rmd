@@ -1,0 +1,149 @@
+---
+title: "Dépouillement de l'enquête Jeunes diplômés Ipag 2015"
+author: "Bruno Fischer"
+date: "27 juin 2016"
+output:
+  word_document:
+    fig_caption: yes
+    fig_width: 7
+    toc: yes
+  html_document:
+    css: customex2.css
+    number_sections: yes
+    theme: readable
+subtitle: 'Dépouillement question par question, partie 2 : ALTERNANCE +'
+---
+
+
+```{r init, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = FALSE, warning = FALSE)
+# opts_chunk$set(echo = FALSE, fig.width = 5, fig.height = 5)
+options(digits = 2, scipen = 7)
+# width + heights figures constants
+dkfigwidth <- 5
+dkfigheight <- 5
+lkfigwidth <- 8
+lkfigheight <- 7
+```
+
+
+```{r, warning=FALSE, include=FALSE}
+#' Loading packages and code
+#' ================
+
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+
+#' Sourcing more code
+#' ================
+#'
+# more code
+# workdir <- getwd()
+maindir <- ".."
+mcodir <- "addcode"
+code1name <- "utils.R"
+source(file.path(maindir, mcodir, code1name))
+
+# more code :  standard functions
+stdfundir <- "standardfunctions"
+stdfunname <- "standardfunctionsV4.R"
+source(file.path(maindir, stdfundir, stdfunname))
+
+
+# more code: results storing and retrieving 
+# ~~==> attention: efface (réinitialise) la liste des résultats de traitement~~
+
+rdirect <- "rcode"
+codresultats <- "funcoderesultats.R"
+codepath <- file.path(maindir, rdirect, codresultats)
+source(file.path(maindir, rdirect, codresultats))
+
+```
+
+
+```{r getdata}
+#'
+#' Récupération des données prétraitées
+#' ====================================
+#'
+
+# path(rda)
+datadir2 <- "data2"
+alldatapath <- file.path(maindir, datadir2, "alldata.Rda")
+# loading
+whatload <- load(alldatapath)
+# verification
+# whatload
+```
+
+
+```{r getallresults}
+#'
+#' lecture des résultats de traitement
+#' ====================================
+#'
+
+# path(rda)
+datadir3 <- "data3"
+allresultspath <- file.path(maindir, datadir3, "allresults.Rda")
+# message(getwd())
+# message(allresultspath)
+# loading
+whatload <- load(allresultspath)
+# verification
+# whatload
+```
+
+
+
+dépouillement
+========================
+
+
+### Rémunération totale (brute) annuelle {-}
+(résultant des questions 69-71)
+(69 Quelle est votre rémunération brute annuelle, hors primes, avantages en nature et gratifications (en euros) ?
+70 Pouvez-vous estimer votre rémunération variable annuelle : primes, participation, intéressement, … (en Euros)
+REM : 71 Disposez-vous d'avantages en nature ? => aucune réponse)
+
+
+```{r}
+res <- getresult("votre_emploi_remuneration_total")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("classe", "valeur centrale","Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+# kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 3)
+
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r message=FALSE}
+plot2 <- plot + labs(x = "rémunération annuelle brute", y = "effectif")
+plot2
+
+```
+
+

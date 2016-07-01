@@ -113,6 +113,13 @@ setresult('centre')
 
 #' begin
 #' ----------
+#'
+#' Le nombre des réponses
+#' ----------------------
+#'
+
+res <- num1d(dataf=repdf, nomvar = "nrep", useNA = "no")
+setresult('nrep')
 
 #'
 #'Le stage de fin d'études

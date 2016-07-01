@@ -3,14 +3,14 @@ title: "Depouillement de l'enquête Jeunes diplômés Ipag 2015"
 author: "Bruno Fischer"
 date: "27 juin 2016"
 output:
-  word_document:
-    fig_caption: yes
-    fig_width: 7
-    toc: yes
   html_document:
     css: customex2.css
     number_sections: yes
     theme: readable
+    toc: yes
+  word_document:
+    fig_caption: yes
+    fig_width: 7
     toc: yes
 subtitle: Dépouillement question par question
 ---
@@ -18,7 +18,7 @@ subtitle: Dépouillement question par question
 
 ```{r init, include=FALSE}
 library(knitr)
-opts_chunk$set(echo = FALSE)
+opts_chunk$set(echo = FALSE, warning=FALSE)
 # opts_chunk$set(echo = FALSE, fig.width = 5, fig.height = 5)
 options(digits = 2, scipen = 7)
 # width + heights figures constants
@@ -89,12 +89,12 @@ whatload <- load(alldatapath)
 # path(rda)
 datadir3 <- "data3"
 allresultspath <- file.path(maindir, datadir3, "allresults.Rda")
-message(getwd())
-message(allresultspath)
+#message(getwd())
+#message(allresultspath)
 # loading
 whatload <- load(allresultspath)
 # verification
-whatload
+#whatload
 ```
 
 
@@ -158,6 +158,44 @@ pval <- chisq.test(x= tcomp[["Nombre de répondants"]], p=tcomp[["Nombre de dipl
 
 La distribution des filières des répondants ne diffère pas significativement de celle des diplômés (p-valeur = `r 100* pval` %, obtenue par simulation)
 On peut donc considérer que l'échantillon des répondants représente bien l'ensemble des spécialisations.
+
+
+* Remarque: dans ce qui suit, un diplômés est considéré comme un répondant s'il a répondu à au moins une question, compte non tenu des questions sur son état-civil. Il faut remarquer que le nombre de réponses cournies par un répondant  est extrêmement variable, comme le montrent les éléments suivants:
+
+```{r reponses}
+
+```{r}
+res <- getresult("nrep")
+
+# numc <- res$numcases
+# ptable <- res$ptable
+# colnames(ptable) <- c("Réponse", "Effectif", "%")
+# pval <- res$chi2$test1$p.value
+# seuilsignif <- 0.05
+# seuilpeusignif <- 0.1
+# estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+rownames(sumtable) <- c("Réponses")
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+
+
+# kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+```
+
+
+```{r}
+plot2 <- plot + labs(x = "nombre de réponses fournies", y = "Poucent")
+plot2
+
+```
+
+Cette distribution est partiellement expliquée par la structure du questionnaire (le nombre de questions proposées étant variable selon le statut des diplômés), mais on rencontrera au cours du dépouillement des nombres de réponses extrêmement variables d'une question à l'autre, au sein de groupes de questions destinées à la même catégorie de diplômés
 
 
 
@@ -362,6 +400,7 @@ plot2
 
 ```
 
+
 ### 17 Si vous n'avez pas eu de proposition d'embauche, savez-vous pour quelle(s) raison(s) ? {-}
 
 
@@ -392,7 +431,7 @@ plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
 ```
 
 
-### 18 Si vous avez eu une proposition d'embauche, Avez-vous accepté cette proposition ? {-} 
+### 18 Si vous avez eu une proposition d'embauche, Avez-vous accepté cette proposition ? {-}
 
 ```{r}
 res <- getresult("alternance_accepter")
