@@ -83,14 +83,22 @@ if(sfdefault("language") == "french") {
 
 #' programming options
 sfdefault("reportNA", FALSE) # report number of NA's in a variable?
-sfdefault("orderfreq", TRUE)
+sfdefault("orderfreq", TRUE) # Should we order the levels of a factor before graphing?
 
 #' display options
 sfdefault("digits", 2)
 sfdefault("sumdigits" , 2)
 sfdefault("filldefault", "steelblue")
 sfdefault("colorannots1", "red")
+
+# options bar chart
 sfdefault("discretebarwidth", 0.5)
+
+# piechart options
+sfdefault("scaletitle" , "") # title for the legend of the pie
+sfdefault("dolabel" , TRUE) # label the slices with %
+sfdefault("minperc" , 8) # minimal % value for showing a lable
+sfdefault("labpos" , 1.1) # position of label, relative to the center (1 = radius of the plot, 0= center)
 
 
 sfdefault("?")
@@ -792,6 +800,53 @@ get.bins <- function(dataf,nomvar,bins) {
         }
         bins
 }
+
+
+# Pie chart
+# sfdefault("scaletitle" , "") # title for the legend of the pie
+# sfdefault("dolabel" , TRUE) # label the slices with %
+# sfdefault("minperc" , 8) # minimal % value for showing a lable
+# sfdefault("labpos" , 1.1)
+
+piechart <- function(data, var,
+                     scaletitle = sfdefault("scaletitle"),
+                     dolabel = sfdefault("dolabel"),
+                     minperc = sfdefault("minperc"),
+                     labpos = sfdefault("labpos") ) {
+        # define local function
+        piechart1 <- function(data, mapping, scaletitle, dolabel, minperc, labpos) {
+                pie <- ggplot(data) +
+                        geom_bar(mapping, width = 1, color="black") +
+                        scale_x_continuous(labels=NULL, breaks=NULL) +
+                        scale_y_continuous(labels=NULL, breaks=NULL) +
+                        scale_fill_discrete(guide = guide_legend(title = scaletitle)) +
+                        coord_polar(theta = "y") +
+                        xlab(NULL) +
+                        ylab(NULL)
+                st <- ggplot_build(pie)
+                lbldf <- with(st$data[[1]], {
+                        xl <- xmin+ labpos * (xmax-xmin)
+                        yl <- (ymax + ymin)/2
+                        perc <- 100 * round(count/sum(count) , 2)
+                        perclabs <- ifelse( perc > minperc, paste0(as.character(perc),"%"), "")
+                        data.frame(xl, yl,perc, perclabs)
+                } )
+                if (dolabel) {pie <- pie + geom_text(data = lbldf, aes(x=xl, y = yl, label = perclabs))}
+                pie
+
+        }
+        # use local function (passing mapping)
+        piechart1(data, aes_(1, fill = as.name(var)), scaletitle, dolabel, minperc, labpos)
+}
+
+# Try
+# piechart(mpg, "manufacturer", minperc = 1)
+# piechart(mpg, "model", minperc = 3)
+# piechart(mpg, "drv", minperc = 3)
+
+# simple bar chart
+
+
 
 # simple Histogram + optional density
 chistodens <- function(dataf, nomvar,
