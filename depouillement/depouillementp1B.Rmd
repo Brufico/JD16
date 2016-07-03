@@ -1,16 +1,16 @@
 ---
 title: "Depouillement de l'enquête Jeunes diplômés Ipag 2015"
-author: "Bruno Fischer"
-date: "27 juin 2016"
+author: "Bruno Fischer Colonimos"
+date: "04 juillet 2016"
 output:
+  word_document:
+    fig_caption: yes
+    fig_width: 7
+    toc: yes
   html_document:
     css: customex2.css
     number_sections: yes
     theme: readable
-    toc: yes
-  word_document:
-    fig_caption: yes
-    fig_width: 7
     toc: yes
 subtitle: Dépouillement question par question
 ---
@@ -229,7 +229,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%)
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent", title = "Proposition d'embauche en fin de stage ?")
+plot2 <- plot + labs(title = "Proposition d'embauche en fin de stage ?")
 plot2
 
 ```
@@ -260,7 +260,7 @@ La différence des fréquences est peu significative (Chi² : p-valeur = `r pval
 
 ```{r}
 plot2 <- plot + 
-        labs(x = " ", y = "Poucent", title = "Avez-vous accepté ?")
+        labs(title = "Avez-vous accepté ?")
 plot2
 
 ```
@@ -309,8 +309,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -336,8 +335,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -366,8 +364,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -395,8 +392,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -404,7 +400,7 @@ plot2
 ### 17 Si vous n'avez pas eu de proposition d'embauche, savez-vous pour quelle(s) raison(s) ? {-}
 
 
-```{r}
+```{r,fig.width=lkfigwidth}
 res <- getresult("alternance_pas_proposition")
 
 numc <- res$numcases
@@ -424,10 +420,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 
 <!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
 
-```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
-
+```{r fig.height=lkfigheight}
+plot
 ```
 
 
@@ -454,8 +448,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2 
+plot
 
 ```
 
@@ -519,13 +512,54 @@ Il y a `r numc` répondants à cette question
 kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 ```
 <!-- -->
+
+
 La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
+plot
+```
+
+
+La situation des diplômés sur le marché de l'emploi
+===================================================
+
+Certains diplômés sont à la recherche d'un emploi, et sont donc sur le marché de l'emploi, de même que les diplômés qui créent effectivement une activité, et ceux qui occupent un poste. Les diplômés qui sont dans d'autres situations ne sont pas sur le marché de l'emploi. En se focalisant sur les diplômés sur le marché de l'emploi, on obtient les résultats suivants:
+
+
+```{r}
+res <- getresult("situation_emploi")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+<!-- -->
+
+
+
+```{r}
+plot
 
 ```
+
+
+
 
 Le volontariat
 ==============
@@ -559,8 +593,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -595,8 +628,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
+
 
 ```
 
@@ -634,8 +667,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
+
 
 ```
 
@@ -670,16 +703,14 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
-
 
 ### 25 Depuis combien de temps êtes-vous à la recherche d'un emploi ? {-}
 
 
-```{r}
+```{r, fig.height=lkfigheight}
 res <- getresult("situation_temps_recherce")
 
 numc <- res$numcases
@@ -690,8 +721,7 @@ seuilsignif <- 0.05
 seuilpeusignif <- 0.1
 estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
 
-
-plot <- res$plot
+plot <- res$plot1
 ```
 
 Il y a `r numc` répondants à cette question
@@ -706,9 +736,9 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 
 ```{r}
 plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
-
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
 ```
+
 
 ### 26 Avez-vous refusé une ou plusieurs propositions d'emploi depuis ? {-}
 
@@ -739,8 +769,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -778,8 +807,7 @@ kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot + labs(x="", y = "%")
 
 ```
 
@@ -801,7 +829,7 @@ Les diplômés en poursuite d’études
 
 
 ```{r}
-res <- getresult("situation_type_etudes")
+res <- getresult("situation_type_etudes_short")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -826,8 +854,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -895,7 +922,7 @@ plot2
 ### 36 Pour quelle raison avez-vous principalement choisi de poursuivre des études ? {-}
 
 ```{r}
-res <- getresult("situation_etudes_raison")
+res <- getresult("situation_etudes_raison_short")
 
 numc <- res$numcases
 ptable <- res$ptable
@@ -918,8 +945,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -960,8 +986,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -995,8 +1020,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -1031,7 +1055,7 @@ seuilsignif <- 0.05
 seuilpeusignif <- 0.1
 estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
 
-plot <- res$plot
+plot <- res$plot1
 ```
 
 Il y a `r numc` répondants à cette question
@@ -1043,10 +1067,9 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
-```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
-
+```{r,fig.height=lkfigheight}
+plot2 <- plot + labs(x = "", y = "Pourcent")
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
 ```
 
 
@@ -1064,7 +1087,7 @@ seuilsignif <- 0.05
 seuilpeusignif <- 0.1
 estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
 
-plot <- res$plot
+plot <- res$plot1
 ```
 
 <!-- Il y a `r numc` répondants à cette question -->
@@ -1076,9 +1099,9 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
-```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+```{r,fig.height=lkfigheight}
+plot2 <- plot + labs(x = "", y = "Pourcent")
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
 
 ```
 
@@ -1111,8 +1134,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+# plot2 <- plot + labs(x = "", y = "Poucent")
+# plot2
 
 ```
 
@@ -1121,7 +1144,7 @@ plot2
 ### 52 Quelle est la taille de l'entreprise (ou du groupe si l'entreprise appartient à un groupe) dans laquelle vous travaillez ? {-}
 
 
-```{r}
+```{r,fig.height=lkfigheight}
 res <- getresult("entreprise_taille")
 
 numc <- res$numcases
@@ -1132,7 +1155,7 @@ seuilsignif <- 0.05
 seuilpeusignif <- 0.1
 estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
 
-plot <- res$plot
+plot <- res$plot1
 ```
 
 Il y a `r numc` répondants à cette question
@@ -1145,8 +1168,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot2 <- plot + labs(x = "", y = "Pourcent")
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
 
 ```
 
@@ -1184,8 +1207,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+# plot2 <- plot + labs(x = "", y = "Poucent")
+# plot2
 
 ```
 
@@ -1278,8 +1301,7 @@ kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot2 <- res$plot + scale_x_continuous(limits = c(0, 25))
 
 ```
 
@@ -1311,8 +1333,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -1344,8 +1365,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+# plot2 <- plot + labs(x = "", y = "Poucent")
+# plot2
 
 ```
 
@@ -1386,8 +1407,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -1558,11 +1578,13 @@ comptable <- full_join( ptablefr,
                                    by="Réponse"),
                         by="Réponse")
 
+comptable  <-  select(comptable, matches(".Eff."), matches(".%"))
+                   
 kable(comptable, caption="fréquence de l'utilisation des quatre langues enseignées à l'Ipag")
 ```
 
 graphique:
-```{r languesgraph, fig.height= 6}
+```{r languesgraph, fig.height= lkfigheight}
 lngdf <-  data.frame(repdf[c("nom","votre_emploi_langues_francais", "votre_emploi_langues_anglais",
                              "votre_emploi_langues_allemand", "votre_emploi_langues_espagnol")])
 
@@ -1573,7 +1595,7 @@ mldf <- filter(mldf, !is.na(value))
 mldf$value <- orderfact(dataf = mldf, "value", nlevels = levels(repdf$votre_emploi_langues_francais))
 
 ggplot(mldf)+
-        geom_bar(aes(x=value)) +
+        geom_bar(aes(x = value, fill = variable)) +
         facet_grid(variable ~ .) +
         theme(axis.text.x = element_text(angle=30, hjust=1))
 ```
@@ -1621,8 +1643,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -1657,7 +1678,7 @@ Il y a `r numc` répondants à cette question
 
 kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 
-# kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
 ```
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
@@ -1730,6 +1751,9 @@ sumtable <- res$summaries
 sumtable <- t(as.data.frame(sumtable))
 colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
 
+exactmean <- mean(repdf$votre_emploi_remuneration_total, na.rm = TRUE)
+exactmedian <- median(repdf$votre_emploi_remuneration_total, na.rm = TRUE)
+
 plot <- res$plot
 ```
 
@@ -1743,6 +1767,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
 
 ```
+
+La rémunération totale annuelle moyenne exacte est de `r exactmean`, ét la médiane est de `r exactmedian`
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
@@ -1816,6 +1842,9 @@ sumtable <- res$summaries
 sumtable <- t(as.data.frame(sumtable))
 colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
 
+exactmean <- mean(repdf$votre_emploi_temps_recherche, na.rm = TRUE)
+exactmedian <- median(repdf$votre_emploi_temps_recherche, na.rm = TRUE)
+
 plot <- res$plot
 ```
 
@@ -1830,6 +1859,8 @@ kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
 ```
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+La durée moyenne de la recherche d'emploi a été pour les diplômés en poste de `r exactmean` mois
 
 ```{r}
 plot2 <- plot + labs(x = "", y = "Poucent")
@@ -1876,7 +1907,7 @@ plot2
 
 
 ```{r}
-res <- getresult("votre_emploi_comment_trouver")
+res <- getresult("votre_emploi_site_recherche")
 numc <- res$numcases
 ptable <- res$ptable
 

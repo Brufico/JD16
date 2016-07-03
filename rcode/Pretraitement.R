@@ -591,6 +591,103 @@ maindf$votre_emploi_temps_recherche <- fn
 # str(maindf$votre_emploi_temps_recherche)
 
 
+# Traitement pb de correspondance pour la filiere
+# ----------------------------------------------
+#
+# maindf[is.na(maindf$filiere), c("nom" , "prenom")]
+
+maindf[maindf$nom == "CRESPO-DONAIRE", "filiere"] <- "International Business"
+maindf[maindf$nom == "ASSULINE", "filiere"] <- "Affaires internationales et achats" #(en fait, Dimitri ASSELIN)
+
+
+# Manque encore JACQUILLAT   Enguerrand
+
+
+
+# Traitement pb de saisie pour la durée d'un CDD
+# ----------------------------------------------
+# (Megane Renault)
+maindf[which(maindf$votre_emploi_duree_cdd == -6) , "votre_emploi_duree_cdd"] <- 6
+
+
+# Le taux d'emploi
+# = la part des diplômés en activité professionnelle parmi ceux qui sont  effectivement sur le marché du travail
+#
+# situations
+ oldsit <- levels(maindf$situation_situation)
+ crea <- levels(maindf$situation_creation_activite)
+
+ maindf$situation_emploi <-
+         with(maindf,
+
+              ifelse(situation_situation == "Sans activité volontairement" |
+                             situation_situation == "En poursuite d'études (hors thèse)",
+                     NA,
+                     ifelse(situation_situation == "En création d'entreprise" &
+                                    situation_creation_activite == "En activité",
+                            "En activité professionnelle",
+                            ifelse(situation_situation == "En activité professionnelle (y compris volontariat)"
+                                   , "En activité professionnelle",
+                                   ifelse(situation_situation == "En recherche d'emploi",
+                                          "En recherche d'emploi",
+                                          NA)
+                            )
+                     )
+              )
+         )
+
+# if(situation_situation == "Sans activité volontairement" |
+#    situation_situation == "En poursuite d'études (hors thèse)") {
+#         NA
+# } else if (situation_situation == "En création d'entreprise" &
+#            situation_creation_activite == "En activité") {
+#         "En activité professionnelle"
+# } else if (situation_situation ==  "En activité professionnelle (y compris volontariat)") {
+#         "En activité professionnelle"
+# } else if (situation_situation == "En recherche d'emploi") {
+#         "En recherche d'emploi"
+# }
+
+
+
+
+#' Cosmétique: raccourcissement des réponses longues
+#' =================================================
+
+#'
+#' situation_type_etudes ==> situation_type_etudes_short
+#' -----------------------------------------------------
+
+typet <- levels(maindf$situation_type_etudes)
+typetshort <- c("Autre", "MBA",
+                "Master of science (MSc)","Master universitaire",
+                "Mastère spécialisé (MS) accrédité CGE",
+                "Préparation d'un concours")
+type_etude_corrtable <- data.frame(typet,typetshort)
+
+maindf$situation_type_etudes_short <- vlookup(maindf$situation_type_etudes, type_etude_corrtable)
+
+
+
+#'
+#' situation_etudes_raison ==> situation_etudes_raison_short
+#' -----------------------------------------------------
+#'
+rais <- levels(maindf$situation_etudes_raison)
+raisshort <- c("acquérir une compétence complémentaire",
+               "acquérir une double compétence",
+               "acquérir une spécialisation pour mon projet pro.",
+               "optimiser mes chances de trouver un emploi")
+etude_raison_corrtable <- data.frame(rais,raisshort)
+
+maindf$situation_etudes_raison_short <- vlookup(maindf$situation_etudes_raison, etude_raison_corrtable)
+
+
+
+
+
+
+
 #' Eléments sur la structure de l'échantillon
 #' ==========================================
 
@@ -600,14 +697,14 @@ ndip <- nrow(maindf)
 # colnames(maindf)
 
 #' trouver les répondants/ nonrépondants
-#' --------------------------
+#' -------------------------------------
 
 # compter le nombre de réponses à partir de la 11è colonne
 maindf$nrep <- sapply(1:nrow(maindf), function(i) sum(!is.na(maindf[i, -(1:10)])) )
 maindf$repondant <- maindf$nrep > 0
 
 #' Table du nombre de réponses et détection des nonrépondants
-with(maindf, table(nrep))
+# with(maindf, table(nrep))
 
 #' données restreintes aux répondants?
 repdf <- maindf[maindf$repondant == TRUE, ]
@@ -626,6 +723,10 @@ p
 #         geom_boxplot(varwidth = TRUE, aes(fill = "par situation")) +
 #         geom_jitter(width = .5) +
 #         coord_flip()
+
+
+
+
 
 
 #' Sauvegardes des données prétraitées

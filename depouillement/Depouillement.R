@@ -32,7 +32,7 @@ source(file.path(".", mcodir, code1name))
 
 # more code :  standard functions
 stdfundir <- "standardfunctions"
-stdfunname <- "standardfunctionsV4.R"
+stdfunname <- "standardfunctionsV5.R"
 source(file.path(".", stdfundir, stdfunname))
 
 #'
@@ -93,7 +93,7 @@ r_stg_fin_etude_accepte <- cat1(dataf=maindf, nomfact="stg_fin_etude_accepte", u
 r_stg_fin_etude_accepte
 
 
-'# 12 Pour quelle(s) raison(s) avez-vous refusé cette proposition ? [Répondez seulement à cette question si vous avez répondu 'Non' à la question 'FIN ETUDES 2]
+#' 12 Pour quelle(s) raison(s) avez-vous refusé cette proposition ? [Répondez seulement à cette question si vous avez répondu 'Non' à la question 'FIN ETUDES 2]
 
 stg_fin_etude_raison_refus
 

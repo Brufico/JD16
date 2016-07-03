@@ -48,7 +48,7 @@ source(file.path(maindir, mcodir, code1name))
 
 # more code :  standard functions
 stdfundir <- "standardfunctions"
-stdfunname <- "standardfunctionsV4.R"
+stdfunname <- "standardfunctionsV5.R"
 source(file.path(maindir, stdfundir, stdfunname))
 
 
@@ -102,29 +102,22 @@ dépouillement
 ========================
 
 
-### Rémunération totale (brute) annuelle {-}
-(résultant des questions 69-71)
-(69 Quelle est votre rémunération brute annuelle, hors primes, avantages en nature et gratifications (en euros) ?
-70 Pouvez-vous estimer votre rémunération variable annuelle : primes, participation, intéressement, … (en Euros)
-REM : 71 Disposez-vous d'avantages en nature ? => aucune réponse)
+### 25 Depuis combien de temps êtes-vous à la recherche d'un emploi ? {-}
 
 
-```{r}
-res <- getresult("votre_emploi_remuneration_total")
+```{r, fig.height=lkfigheight}
+res <- getresult("situation_temps_recherce")
 
 numc <- res$numcases
 ptable <- res$ptable
-colnames(ptable) <- c("classe", "valeur centrale","Effectif", "%")
+colnames(ptable) <- c("Réponse", "Effectif", "%")
 pval <- res$chi2$test1$p.value
 seuilsignif <- 0.05
 seuilpeusignif <- 0.1
 estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
 
-sumtable <- res$summaries
-sumtable <- t(as.data.frame(sumtable))
-colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
 
-plot <- res$plot
+plot <- res$plot1
 ```
 
 Il y a `r numc` répondants à cette question
@@ -132,18 +125,13 @@ Il y a `r numc` répondants à cette question
 
 ```{r}
 
-# kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
-
-kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 3)
-
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 ```
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
-```{r message=FALSE}
-plot2 <- plot + labs(x = "rémunération annuelle brute", y = "effectif")
-plot2
-
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
 ```
-
 

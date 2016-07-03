@@ -1,8 +1,8 @@
 #'---
 #'title: "Standard Functions for Basic Statistical Analysis"
-#'subtitle: R code in standardfunctions V3.R
+#'subtitle: R code in standardfunctions V5.R
 #'author: "Bruno Fischer Colonimos"
-#'date: "17 juin 2016"
+#'date: "3 juillet 2016"
 #'abstract: |
 #'      This is the code, presented as a notebook.
 #'      It should help readability.
@@ -90,7 +90,10 @@ if(sfdefault("language") == "french") {
         sfdefault("percentlabel", sfdefault("percent"))
 }
 
-#' programming options
+#' Programming default options
+#'
+
+#+ progoptions, results = "hide"
 sfdefault("reportNA", FALSE) # report number of NA's in a variable?
 sfdefault("orderfreq", TRUE) # Should we order the levels of a factor before graphing?
 
@@ -99,6 +102,10 @@ sfdefault("digits", 2)
 sfdefault("sumdigits" , 2)
 sfdefault("filldefault", "steelblue")
 sfdefault("colorannots1", "red")
+# max number of plots
+sfdefault("maxplots", 3)
+# options discrete charts
+sfdefault("cat1plots", c("pie", "bar")) # which charts/plots to store, for 1 categorical var #c("bar", "pie")
 
 # options bar chart
 sfdefault("discretebarwidth", 0.5)
@@ -106,17 +113,17 @@ sfdefault("discretebarwidth", 0.5)
 # piechart options
 sfdefault("scaletitle" , "") # title for the legend of the pie
 sfdefault("dolabel" , TRUE) # label the slices with %
-sfdefault("minperc" , 8) # minimal % value for showing a lable
-sfdefault("labpos" , 1.1) # position of label, relative to the center (1 = radius of the plot, 0= center)
+sfdefault("minperc" , 5) # minimal % value for showing a lable
+sfdefault("labpos" , 1.15) # position of label, relative to the center (1 = radius of the plot, 0= center)
+
+# verification
+# sfdefault("?")
 
 
-sfdefault("?")
 
 
-
-
-#' Return values structure
-#' ======================================
+#' Structure for each set of statistical results
+#' =============================================
 
 
 # make a result list. unsupplied elements assigned default=NULL and not included in result list
@@ -197,6 +204,8 @@ assoc.op <- function(opname, listargs) {
         }
 }
 
+#' REM: This ^ is likely not necessary. Check 'reduce'
+
 
 # identify a  warning
 is.warning <- function(x) {"warning" %in% class(x)}
@@ -261,6 +270,35 @@ sumvector <- function (var, dnames = sfdefault("namesum"),
                 if (reportNA) {s} else {s[1:(length(s) - 1)] }
         }
 }
+
+#
+# sumvector <- function (var, dnames = sfdefault("namesum"),
+#                        reportNA = sfdefault("reportNA")) {
+#         if (length(var) == 0) {
+#                 sapply(numeric(length = 9), function(x) NA)
+#         }else {# construct a more complete summary vector
+#                 nonavar <- nonavect(var)
+#                 numcases <-  length(nonavar)
+#                 numna <- length(var) - numcases
+#                 meanval <- mean(nonavar)
+#                 sdval <- sd(nonavar)
+#
+#                 res <- c(numcases, meanval, sdval, quantile(nonavar))
+#
+#                 if (reportNA) {
+#                         names(res) <- dnames[1:8]
+#                 } else {
+#                         res <- c(res,numna)
+#                         names(res) <- dnames
+#                 }
+#                 res
+#         }
+# }
+
+
+
+
+
 
 
 #' Combined summaries for different variables in a dataframe, for all individuals
@@ -656,9 +694,10 @@ cbyffachistogram <- function(dataf, varf, varc, useNA = "no",
 #' verbatim + verbatim2  = list of text values ( as in "other..." answers)
 #' ---------------------------------------------------------------------
 
+
 verbatim <- function(dataf, nomfact, useNA = "no"){
         dataf <- if (useNA == "no") {
-                dataf[which(!is.na(dataf[[nomfact]])), ]
+                nonadf(dataf, nomfact)
         } else {
                 dataf
         }
@@ -670,14 +709,15 @@ verbatim <- function(dataf, nomfact, useNA = "no"){
 }
 
 #' verbatim2 lists another variable alongside to "explain" verbatims
+#' (bynomfact is not filtered for NA values: we want all responses to nomfact)
 verbatim2 <- function(dataf, nomfact, bynomfact,  useNA = "no"){
         dataf <- if (useNA == "no") {
-                dataf[which(!is.na(dataf[[nomfact]])), ]
+                nonadf(dataf, nomfact)
         } else {
                 dataf
         }
-        numc <- length(nonavect(dataf[[nomfact]]))
-        ptable <- as.data.frame(dataf[order(dataf[[bynomfact]]), c(bynomfact, nomfact)])
+        numc <- nrow(dataf)
+        ptable <- dataf[order(dataf[[bynomfact]]), c(bynomfact, nomfact)]
         colnames(ptable) <- c( bynomfact, "Verbatim")
         make.result(ptable = ptable,
                     numcases = numc)
@@ -694,8 +734,16 @@ cat1 <- function(dataf, nomfact, useNA = "no",
                  orderfreq = sfdefault("orderfreq"),
                  orderdesc = TRUE, ordervar = "c..nt",
                  orderval = NA, orderfun = sum,
-                 rfreq = TRUE, dotest = TRUE,
-                 digits = 2, cfill = sfdefault("filldefault")) {
+                 dotest = TRUE, # make a chi2 test?
+                 digits = 2,
+                 plots = sfdefault("cat1plots"),
+                 # options for barchart
+                 rfreq = TRUE, cfill = sfdefault("filldefault"),
+                 # options for piechart
+                 scaletitle = sfdefault("scaletitle"),
+                 dolabel = sfdefault("dolabel"),
+                 minperc = sfdefault("minperc"),
+                 labpos = sfdefault("labpos") ) {
         # useNA = "always, "ifany" or "no",
         # orderfreq = TRUE  or FALSE,
         # descorder =TRUE or FALSE
@@ -706,7 +754,12 @@ cat1 <- function(dataf, nomfact, useNA = "no",
         dataf[[nomfact]] <-
                 orderfact(dataf, nomfact,
                           orderfreq, orderdesc, ordervar, orderval, orderfun)
-
+        # getting rid of NA's ?
+        dataf <- if (useNA == "no") {
+                nonadf(dataf, nomfact)
+        } else {
+                dataf
+        }
         # make table as dataframe
         tbl <- table(dataf[[nomfact]], useNA = useNA)
         tbl <- data.frame(num = tbl, rfreq = tbl / sum(tbl))
@@ -728,24 +781,43 @@ cat1 <- function(dataf, nomfact, useNA = "no",
         }
 
         # bar chart with ggplot2
-        # the data
-        dataf1 <- if (useNA == "no") {
-                dataf[which(!is.na(dataf[[nomfact]])), ]
-        } else {
-                dataf
+        # # the data
+        # dataf1 <- if (useNA == "no") {
+        #         dataf[which(!is.na(dataf[[nomfact]])), ]
+        # } else {
+        #         dataf
+        # }
+        # # base ggplot
+        # pt <- if (rfreq) {
+        #         ggplot(dataf1,
+        #                aes_(as.name(nomfact), quote(100 * ..count.. / sum(..count..))))
+        # } else {
+        #         ggplot(dataf1,
+        #                aes_(as.name(nomfact)))
+        # }
+        # # geom
+        # pt <- pt + geom_bar(fill = cfill)
+        # # ylabel
+        # if (rfreq) {pt <- pt + ylab(label = "percent")}
+        bar <- barchart(dataf, nomvar=nomfact, useNA = useNA, rfreq = rfreq,
+                             barwidth = sfdefault("discretebarwidth"),
+                             cfill = cfill, percentlabel = sfdefault("percentlabel") )
+
+        pie <- piechart(dataf, nomfact,
+                             scaletitle = sfdefault("scaletitle"),
+                             dolabel = sfdefault("dolabel"),
+                             minperc = sfdefault("minperc"),
+                             labpos = sfdefault("labpos") )
+        # prepare plots for storage
+        plot0 <- NULL
+        plot1 <- NULL
+        plot2 <- NULL
+        plot3 <- NULL
+        maxplots <- sfdefault("maxplots")
+        for (i in 1:min(length(plots), maxplots)) {
+                pname <- paste("plot", i-1, sep = "")
+                assign(pname, eval(as.name(plots[i])))
         }
-        # base ggplot
-        pt <- if (rfreq) {
-                ggplot(dataf1,
-                       aes_(as.name(nomfact), quote(100 * ..count.. / sum(..count..))))
-        } else {
-                ggplot(dataf1,
-                       aes_(as.name(nomfact)))
-        }
-        # geom
-        pt <- pt + geom_bar(fill = cfill)
-        # ylabel
-        if (rfreq) {pt <- pt + ylab(label = "percent")}
 
         # return
         make.result(name = nomfact,
@@ -754,7 +826,10 @@ cat1 <- function(dataf, nomfact, useNA = "no",
                     table = tbl,
                     ptable = ptb,
                     chi2 = uchisq,
-                    plot = pt)
+                    plot = plot0,
+                    plot1 = plot1,
+                    plot2 = plot2,
+                    plot3 = plot3)
 }
 
 
@@ -778,6 +853,7 @@ num1d <- function(dataf, nomvar, useNA ="no",
         tbl$index <- ave(1:nrow(tbl),  FUN = function(x) 1:length(x)) # rank
         # printable table
         ptb <- tbl[1:3]
+        ptb[[3]] <- 100 * round(ptb[[3]], digits)
         colnames(ptb) <- c(nomvar, "Freq.", "Rel.Freq")
 
         s <- sumvector(dataf[[nomvar]])
@@ -786,20 +862,23 @@ num1d <- function(dataf, nomvar, useNA ="no",
         uchisq <- try.chisq.test(tbl[["num"]])
 
         # bar chart
-        # data+aes
-        if (useNA == "no") {dataf <- dataf[which(!is.na(dataf[[nomvar]])), ]}
-        if (rfreq) {
-                pt <- ggplot( dataf,
-                              aes_(as.name(nomvar),
-                                   quote(100 * ..count.. / sum(..count..))) )
-        } else {
-                pt <- ggplot( dataf,
-                              aes_(as.name(nomvar)) )
-        }
-        # geom
-        pt <- pt + geom_bar(width = width, fill = cfill )
-        # ylabel
-        if (rfreq) {pt <- pt + ylab("percent")}
+        # # data+aes
+        # if (useNA == "no") {dataf <- dataf[which(!is.na(dataf[[nomvar]])), ]}
+        # if (rfreq) {
+        #         pt <- ggplot( dataf,
+        #                       aes_(as.name(nomvar),
+        #                            quote(100 * ..count.. / sum(..count..))) )
+        # } else {
+        #         pt <- ggplot( dataf,
+        #                       aes_(as.name(nomvar)) )
+        # }
+        # # geom
+        # pt <- pt + geom_bar(width = width, fill = cfill )
+        # # ylabel
+        # if (rfreq) {pt <- pt + ylab("percent")}
+        bar <- barchart(dataf, nomvar, useNA = useNA, rfreq = rfreq,
+                        barwidth = sfdefault("discretebarwidth"),
+                        cfill = cfill, percentlabel = sfdefault("percentlabel") )
 
         # return values
         make.result(name = nomvar,
@@ -808,7 +887,8 @@ num1d <- function(dataf, nomvar, useNA ="no",
                     ptable = ptb,
                     numcases = num,
                     chi2 = uchisq,
-                    plot = pt)
+                    plot = bar  # pt
+                    )
 }
 
 
@@ -1018,7 +1098,7 @@ cat2 <- function(dataf, nomfact1, nomfact2,  useNA = "no",
 # nclass.scott(mpg$hwy)
 #
 #
-#' ### fonctions de generation de graphiques ===================================================
+#' ### fonctions de generation de graphiques ------------------------------------------------------
 
 #' ?? useful??
 

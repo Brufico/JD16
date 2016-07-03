@@ -32,7 +32,7 @@ source(file.path(".",mcodir,code1name))
 
 #morecode:standardfunctions
 stdfundir <- "standardfunctions"
-stdfunname <- "standardfunctionsV4.R"
+stdfunname <- "standardfunctionsV5.R"
 source(file.path(".", stdfundir, stdfunname))
 
 #'
@@ -158,7 +158,7 @@ setresult('alternance_pas_proposition')
 res <- cat1(dataf=maindf, nomfact="alternance_accepter", useNA = "no", orderfreq = FALSE)
 setresult('alternance_accepter')
 
-res <- cat1(dataf=maindf, nomfact="alternance_refus", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=maindf, nomfact="alternance_refus", useNA = "no", orderfreq = TRUE)
 setresult('alternance_refus')
 
 
@@ -168,6 +168,13 @@ setresult('alternance_refus')
 
 res <- cat1(dataf=maindf, nomfact="situation_situation", useNA = "no", orderfreq = FALSE)
 setresult('situation_situation')
+
+
+#' Situation sur le marché de l'emploi
+#' ------------------------------------
+
+res <- cat1(dataf=maindf, nomfact="situation_emploi", useNA = "no", orderfreq = FALSE)
+setresult('situation_emploi')
 
 
 ### Si Volontariat
@@ -190,7 +197,7 @@ setresult('situation_creation_activite')
 res <- cat1(dataf=maindf, nomfact="situation_recheche_depuis_ecole", useNA = "no", orderfreq = FALSE)
 setresult('situation_recheche_depuis_ecole')
 
-res <- cat1(dataf=maindf, nomfact="situation_temps_recherce", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=maindf, nomfact="situation_temps_recherce", useNA = "no", orderfreq = FALSE, )
 setresult('situation_temps_recherce')
 
 res <- cat1(dataf=maindf, nomfact="situation_refus_proposition", useNA = "no", orderfreq = FALSE)
@@ -241,8 +248,8 @@ setresult('situation_nombre_refus')
 
 ### Si En poursuite d'études
 
-res <- cat1(dataf=maindf, nomfact="situation_type_etudes", useNA = "no", orderfreq = FALSE)
-setresult('situation_type_etudes')
+res <- cat1(dataf=maindf, nomfact="situation_type_etudes_short", useNA = "no", orderfreq = TRUE)
+setresult('situation_type_etudes_short')
 
 res <- verbatim2(dataf=maindf, nomfact="situation_etudes_etablissement", bynomfact = "filiere")
 setresult('situation_etudes_etablissement')
@@ -253,17 +260,19 @@ setresult('situation_etudes_intitule')
 res <- cat1(dataf=maindf, nomfact="situation_etudes_alternance", useNA = "no", orderfreq = FALSE)
 setresult('situation_etudes_alternance')
 
-res <- cat1(dataf=maindf, nomfact="situation_etudes_raison", useNA = "no", orderfreq = FALSE)
-setresult('situation_etudes_raison')
+res <- cat1(dataf=maindf, nomfact="situation_etudes_raison_short", useNA = "no", orderfreq = TRUE)
+setresult('situation_etudes_raison_short')
 
 
 
-### Si En activité professinnelle
+### Si En activité professionnelle
+
+#### caractériqtiques générales de l'emploi
 
 res <- cat1(dataf=maindf, nomfact="emploi_actuel_premier_second", useNA = "no", orderfreq = FALSE)
 setresult('emploi_actuel_premier_second')
 
-res <- cat1(dataf=maindf, nomfact="emploi_actuel_type", orderfreq = FALSE)
+res <- cat1(dataf=maindf, nomfact="emploi_actuel_type", orderfreq = TRUE)
 setresult('emploi_actuel_type')
 
 # 'REM: Zéro répondants --------------------------------------------------------
@@ -323,7 +332,7 @@ setresult('entreprise_taille')
 
 #### fonction
 
-res <- verbatim2(dataf=maindf, nomfact="votre_emploi_fonction", bynomfact = "votre_emploi_activite")
+res <- verbatim(dataf=maindf, nomfact="votre_emploi_fonction")
 # setresult('votre_emploi_fonction')
 
 res <- cat1(dataf=maindf, nomfact="votre_emploi_activite", useNA = "no", orderfreq = TRUE)
@@ -356,7 +365,7 @@ setresult('votre_emploi_temps_partiel_subi')
 
 #### Statut et responsabilité
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_statut_cadre", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=maindf, nomfact="votre_emploi_statut_cadre", useNA = "no", orderfreq = TRUE)
 setresult('votre_emploi_statut_cadre')
 
 res <- cat1(dataf=maindf, nomfact="votre_emploi_personnes_responsable", useNA = "no", orderfreq = FALSE)
@@ -438,6 +447,8 @@ setresult('votre_emploi_remuneration_part_variable')
 
 # (part variable ajoutée)
 
+
+
 #'
 #' La recherche de l'emploi des diplômés en poste
 #' ----------------------------------------------
@@ -461,7 +472,7 @@ setresult('votre_emploi_site_recherche')
 #'
 
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_principal_critere", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=maindf, nomfact="votre_emploi_principal_critere", useNA = "no", orderfreq = TRUE)
 setresult('votre_emploi_principal_critere')
 
 # NEPS
