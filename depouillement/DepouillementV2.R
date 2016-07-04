@@ -1,18 +1,18 @@
 #'---
 #'title: Enquête JD 2015
-#'subtitle: "Code:Depouillementquestionparquestion"
+#'subtitle: "Code: Depouillement question par question (DepouillementV2.R)"
 #'author: "Bruno Fischer Colonimos"
-#'date: 27 juin 2016
+#'date: 04 juillet 2016
 #'output:
-#'  html_document:
-#'    css:customex2.css
-#'    number_sections:yes
-#'    theme:readable
-#'    toc:yes
-#'  pdf_document:
-#'    toc: yes
-#'  word_document:default
-#'---
+#'      html_document:
+#'         css: customex2.css
+#'      number_sections: yes
+#'      theme: readable
+#'      toc: yes
+#' pdf_document:
+#'         toc: yes
+#' word_document: default
+#' ---
 #'
 
 #' Loading packages
@@ -20,11 +20,19 @@
 
 library(dplyr)
 library(ggplot2)
+library(knitr)
+
+#+
+knitr::opts_knit$set(root.dir = normalizePath("..")) # solves the dir problem for knitr
+
 
 
 #'Sourcing more code
 #'================
 #'
+
+
+#
 #morecode
 mcodir  <-  "addcode"
 code1name <- "utils.R"
@@ -182,7 +190,7 @@ setresult('situation_emploi')
 res <- cat1(dataf=maindf, nomfact="situation_volontariat", useNA = "no", orderfreq = FALSE)
 setresult('situation_volontariat')
 
-res <- cat1(dataf=maindf, nomfact="situation_volontariat_type", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=maindf, nomfact="situation_volontariat_type", useNA = "no", orderfreq = TRUE)
 setresult('situation_volontariat_type')
 
 
@@ -274,6 +282,11 @@ setresult('emploi_actuel_premier_second')
 
 res <- cat1(dataf=maindf, nomfact="emploi_actuel_type", orderfreq = TRUE)
 setresult('emploi_actuel_type')
+
+# idem avec réponse raccourcie
+res <- cat1(dataf=maindf, nomfact="emploi_actuel_type_short", orderfreq = TRUE)
+setresult('emploi_actuel_type_short')
+
 
 # 'REM: Zéro répondants --------------------------------------------------------
 # res <- cat1(dataf=maindf, nomfact="xxxx", useNA = "no", orderfreq = FALSE)

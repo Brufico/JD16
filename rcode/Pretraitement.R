@@ -20,6 +20,10 @@
 
 library(dplyr)
 library(ggplot2)
+library(knitr)
+
+#+
+knitr::opts_knit$set(root.dir = normalizePath("..")) # solves the dir problem for knitr
 
 #' Loading more code
 #' ================
@@ -27,6 +31,8 @@ library(ggplot2)
 # more code dir
 mcodir <- "addcode"
 code1name <- "utils.R"
+codepath <- file.path(".", mcodir, code1name)
+print(codepath) #dbg
 source(file.path(".", mcodir, code1name))
 
 
@@ -56,9 +62,11 @@ maindf <- read.csv(fpath1, sep=";", na.strings = "")
 
 #'
 #' Nettoyage
-#' ----------
+#' =========
 #'
-#' ### Elimination de colonnes inutiles
+
+#' Elimination de colonnes inutiles
+#' --------------------------------
 #'
 # eliminer colonnes 'Date_creation' ou 'Date_maj'
 keepcol <- !grepl(pattern = "^Date_", x = colnames(maindf))
@@ -66,6 +74,15 @@ maindf <- maindf[ , keepcol]
 # eliminer la dernière ligne (vide)==> inutile maintenant
 # maindf <- maindf[ -345,]
 
+
+
+
+
+
+#'
+#' Traitement pb de correspondance pour la filiere
+#' ----------------------------------------------
+#'
 
 # unique(maindf$filiere)
 # levels(maindf$filiere)
@@ -78,14 +95,31 @@ maindf <- maindf[ , keepcol]
 # M	Thibault	SIMON	PARIS	Stratégie commerciale et développement d’affaires	2
 
 # FUCHS	Theresa Marie (pas de correspondance ==> Füchs) International Marketing	NICE
+#
+# maindf[is.na(maindf$filiere), c("nom" , "prenom")]
+#
+# Corrections
+# -----------
+
+maindf[maindf$nom == "CRESPO-DONAIRE", "filiere"] <- "International Business"
+# (mismatch initial pour raison inconnue)
+maindf[maindf$nom == "ASSULINE", "filiere"] <- "Affaires internationales et achats"
+# (en fait, Dimitri ASSELIN)
+maindf[maindf$nom == "JACQUILLAT", "filiere"] <- "Entrepreneuriat et innovation"
+# (en fait, Enguerrand MICHE JACQUILLAT)
 
 
 
-#' ### Ajustement du type de certaines variables
+
+
+#' Ajustement du type de certaines variables
+#' -----------------------------------------
 
 # Nom et prénom ==> as.character
 maindf$nom <- as.character(maindf$nom)
 maindf$prenom <- as.character(maindf$prenom)
+
+
 
 # * 25 Depuis combien de temps êtes-vous à la recherche d'un emploi ? *situation_temps_recherce* ==> ordonné
 
@@ -219,6 +253,9 @@ maindf[vec1, "votre_emploi_developpement_durable"] <- 1
 
 
 
+#' Correction de valeurs/ generation de variables
+#' ----------------------------------------------
+
 #' ### Correspondance Secteurs - Secteurs pour L'Etudiant
 
 # création de la table
@@ -244,7 +281,7 @@ maindf$entreprise_secteur_letudiant <- vlookup(maindf$entreprise_secteur,searcht
 
 #'
 #' Nettoyage des données de rémunération
-#' -------------------------------------
+#' =====================================
 #'
 
 #' variables concernées:
@@ -255,15 +292,17 @@ maindf$entreprise_secteur_letudiant <- vlookup(maindf$entreprise_secteur,searcht
 #' les variables ont été lues en tant que facteur: pipeline =
 #' facteur => as.character() => correction des conneries texte (gsub()) => as.numeric()
 #'
-#' ensuite : detection des outliers
-#' ==> table de cas suspects == suspectdf
-#' ==> correction au cas par cas ou demande de renseignements complémentaires
-#' ==> génération de tables de corrections et de demande de rens
+#' ensuite : detection des outliers\
+#' ==> table de cas suspects == suspectdf\
+#' ==> correction au cas par cas ou demande de renseignements complémentaires\
+#' ==> génération de tables de corrections et de demande de renseignements
+#'
 
 
 
-# Traitement pb de saisie de nombre et détection de  problèmes de sens
-# --------------------------------------------------------------------
+#'
+#' Traitement pb de saisie de nombre et détection de  problèmes de sens
+#' --------------------------------------------------------------------
 
 
 # première variable
@@ -347,8 +386,8 @@ suspectdf <-  data.frame("Index" = indxoutliers,
 
 
 
-# solution des problèmes ou recherche complémentaire
-# ---------------------------------------------------
+#' solution des problèmes ou recherche complémentaire
+#' ---------------------------------------------------
 #
 #initialiser les listes de corrections faites ou de modifications à faire
 verifdf <- data.frame(integer(0), character(0), character(0), numeric(0), numeric(0),
@@ -424,7 +463,7 @@ rmaccepter <- function(i, lcorrig=corrigdf0) {
         corrigdf <<- rbind(corrigdf,lcorrig) # effet de bord
 }
 
-# exécution des vérifications/corrections
+# exécution des vérifications/corrections ==> non fiable : fondé sur le numéro ==> décalage si changement
 # rmverifier(1) #  LEGER           Viviane
 # rmverifier(2) # WIEDMEIER             Julia
 # rmverifier(3) # FERNANDEZ GONZALEZ            Raquel
@@ -474,6 +513,8 @@ rmaccepter <- function(i, lcorrig=corrigdf0) {
 # rmaccepter(46)
 # rmverifier(47)
 
+# version ok
+# ------------------
 rmverifier("LEGER") #  LEGER           Viviane
 rmverifier("WIEDMEIER") # WIEDMEIER             Julia
 rmverifier("FERNANDEZ GONZALEZ") # FERNANDEZ GONZALEZ            Raquel
@@ -568,8 +609,9 @@ maindf <-
 
 
 
-# Traitement pb de saisie de nombre et détection de  problèmes pour le délai de recherche (72)
-# --------------------------------------------------------------------------------------------
+#'
+#' Traitement pb de saisie de nombre et détection de  problèmes pour le délai de recherche (72)
+#' ===========================================================================================
 #
 # la variable a été lue comme un facteur, avec des aberrations
 # conversion en texte
@@ -591,26 +633,28 @@ maindf$votre_emploi_temps_recherche <- fn
 # str(maindf$votre_emploi_temps_recherche)
 
 
-# Traitement pb de correspondance pour la filiere
-# ----------------------------------------------
+#'
+#' Traitement pb de saisie de nombre et détection de  problèmes pour situation_volontariat_type (72)
+#' ===========================================================================================
 #
-# maindf[is.na(maindf$filiere), c("nom" , "prenom")]
-
-maindf[maindf$nom == "CRESPO-DONAIRE", "filiere"] <- "International Business"
-maindf[maindf$nom == "ASSULINE", "filiere"] <- "Affaires internationales et achats" #(en fait, Dimitri ASSELIN)
+# niveaux saisis
+# "Les animaux","volontariat International En entreprise"
 
 
-# Manque encore JACQUILLAT   Enguerrand
+levels(maindf$situation_volontariat_type) <- c("Autre","Volontariat International en Entreprise")
 
 
-
-# Traitement pb de saisie pour la durée d'un CDD
-# ----------------------------------------------
+#'
+#' Traitement pb de saisie pour la durée d'un CDD
+#' ==============================================
+#'
 # (Megane Renault)
 maindf[which(maindf$votre_emploi_duree_cdd == -6) , "votre_emploi_duree_cdd"] <- 6
 
 
-# Le taux d'emploi
+#'
+#' Le taux d'emploi
+#' =================
 # = la part des diplômés en activité professionnelle parmi ceux qui sont  effectivement sur le marché du travail
 #
 # situations
@@ -651,7 +695,7 @@ maindf[which(maindf$votre_emploi_duree_cdd == -6) , "votre_emploi_duree_cdd"] <-
 
 
 
-#' Cosmétique: raccourcissement des réponses longues
+#' Cosmétique: raccourcissement des réponses longues pour les graphes
 #' =================================================
 
 #'
@@ -683,13 +727,24 @@ etude_raison_corrtable <- data.frame(rais,raisshort)
 maindf$situation_etudes_raison_short <- vlookup(maindf$situation_etudes_raison, etude_raison_corrtable)
 
 
+#'
+#'  emploi_actuel_type==> emploi_actuel_type_short
+#' -----------------------------------------------------
+#'
+type <- levels(maindf$emploi_actuel_type)
+typeshort <- c("Non salarié(e)",
+               "Salarié(e) d'une entité publique ou associative",
+               "Salarié(e) d'une entreprise privée",
+               "Salarié(e) de l'Etat")
 
 
+emploi_actuel_type_corrtable <- data.frame(type,typeshort)
 
+maindf$emploi_actuel_type_short <- vlookup(maindf$emploi_actuel_type, emploi_actuel_type_corrtable)
 
-
-#' Eléments sur la structure de l'échantillon
-#' ==========================================
+#'
+#' Eléments sur la structure de l'échantillon des réponses, sélection des dataframes à exploiter
+#' =============================================================================================
 
 # nombre de diplomés
 ndip <- nrow(maindf)
@@ -754,13 +809,13 @@ corrigdfpath <- file.path(".", datadir2, "corrigdf.csv")
 classmaindfpath <- file.path(".", datadir2, "classmaindf.Rda")
 
 
-# vecteur des classes des colonnes des données principales
+# vecteur des classes des colonnes des données principales (pour lecture éventuelle en .csv)
 classmaindf <- lapply(maindf, FUN = function(col) class(col))
 classmaindf <- unlist(classmaindf)
 
 
 #'
-#' sauvegarde en cvs
+#' sauvegarde en csv
 #' -----------------
 #'
 

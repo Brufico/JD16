@@ -1020,7 +1020,8 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot
+res <- getresult("emploi_actuel_type_short")
+res$plot
 
 ```
 
@@ -1302,7 +1303,7 @@ kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
 
 ```{r}
 plot2 <- res$plot + scale_x_continuous(limits = c(0, 25))
-
+plot2
 ```
 
 
@@ -1437,8 +1438,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -1471,8 +1471,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -1503,8 +1502,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -1535,8 +1533,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
-plot2
+plot
 
 ```
 
@@ -1577,8 +1574,9 @@ comptable <- full_join( ptablefr,
                                    full_join(ptableal, ptablees, by="Réponse" ), 
                                    by="Réponse"),
                         by="Réponse")
-
+rwn <- row.names(comptable)
 comptable  <-  select(comptable, matches(".Eff."), matches(".%"))
+row.names(comptable) <- rwn
                    
 kable(comptable, caption="fréquence de l'utilisation des quatre langues enseignées à l'Ipag")
 ```
@@ -1597,6 +1595,8 @@ mldf$value <- orderfact(dataf = mldf, "value", nlevels = levels(repdf$votre_empl
 ggplot(mldf)+
         geom_bar(aes(x = value, fill = variable)) +
         facet_grid(variable ~ .) +
+        labs(x="") +
+        guides(fill = "none") +
         theme(axis.text.x = element_text(angle=30, hjust=1))
 ```
 
