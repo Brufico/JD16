@@ -5,6 +5,7 @@
 
 library(ggplot2)
 library(dplyr)
+
 # library(ggplot2movies)
 
 # library(reshape2)
@@ -79,7 +80,10 @@ dtf <- make_testdata()
 # sfdefault("namesum", default("namesumfrench"))
 # sfdefault("namesum")
 
+# test makeresult
 
+res1 <- make.result(name="aaa", numcases=55)
+res1 <- make.result(summaries = c(5,6))
 
 
 # test assoc.op

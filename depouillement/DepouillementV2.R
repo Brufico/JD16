@@ -246,10 +246,65 @@ setresult('situation_nombre_refus')
 # res <- cat1(dataf=maindf, nomfact="xxxx", useNA = "no", orderfreq = FALSE)
 # # setresult('situation_difficultes_autres')
 
-# res <- cat1(dataf=maindf, nomfact="xxxx", useNA = "no", orderfreq = FALSE)
-# setresult('X_autre_details')
+
+
+
+
+variables <- colnames(maindf)[grep("situation_difficultes_", colnames(maindf))]
+
+raisons <- c("Difficultés à trouver des offres d'emploi correspondant au projet professionnel",
+             "Mobilité géographique difficile",
+             "Méconnaissance des débouchés possibles pour ma formation",
+             "Manque d'expérience professionnelle",
+             "Difficulté à mettre en valeur mes compétences",
+             "Formation mal, ou pas reconnue par les employeurs",
+             "Formation inadaptée au marché de l'emploi",
+             "Salaire proposé insuffisant",
+             "Autre difficulté non mentionnée dans la liste")
+
+
+diffdf <- repdf[variables]
+
+nbcit <- sapply(X = diffdf, FUN = function(x) length(nonavect(x)))
+percit <- 100* round(nbcit/sum(nbcit),2)
+rangmed = sapply(X = diffdf, FUN = function(x) median(nonavect(x)))
+
+raisdf <- cbind(correp, as.data.frame(nbcit, percit, rangmed))
+
+# as.data.frame(nbcit)
+# as.data.frame(percit)
+# as.data.frame(rangmed)
+synth <- cbind(raisons, as.data.frame(nbcit),as.data.frame(percit),as.data.frame(rangmed))
+rownames(synth) <- NULL
+colnames(synth) <- c("raisons", "citations", "% citations", "rang median")
+synth <- synth[ order(synth[["% citations"]], decreasing = TRUE ), ]
+
+res=make.result(ptable = synth)
+setresult("situation_difficultes")
+
+res <- verbatim(maindf, nomfact="X_autre_details")
+setresult('X_autre_details')
+
+
+
+
+
+
+
+
+
+
+
 
 #-------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 

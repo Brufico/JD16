@@ -637,11 +637,35 @@ maindf$votre_emploi_temps_recherche <- fn
 #' Traitement pb de saisie de nombre et détection de  problèmes pour situation_volontariat_type (72)
 #' ===========================================================================================
 #
+
+
 # niveaux saisis
 # "Les animaux","volontariat International En entreprise"
 
-
 levels(maindf$situation_volontariat_type) <- c("Autre","Volontariat International en Entreprise")
+
+
+
+#' Traitement pb de saisie de nombre et détection de  problèmes pour situation_difficultes_salaire_insuffisant etc
+#' ===========================================================================================
+
+# noms des variables
+variables <- colnames(maindf)[grep("situation_difficultes_", colnames(maindf))]
+
+#correction des rangs négatifs:
+for (i in variables){
+        for (j in 1:nrow(maindf)) {
+                if (!is.na(maindf[j , i]) & maindf[j , i] <= 0 ) {
+                        maindf[j , i]<- NA
+                }
+
+        }
+}
+
+
+
+
+
 
 
 #'

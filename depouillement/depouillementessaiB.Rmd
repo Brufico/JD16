@@ -3,14 +3,14 @@ title: "Dépouillement de l'enquête Jeunes diplômés Ipag 2015"
 author: "Bruno Fischer"
 date: "27 juin 2016"
 output:
-  word_document:
-    fig_caption: yes
-    fig_width: 7
-    toc: yes
   html_document:
     css: customex2.css
     number_sections: yes
     theme: readable
+  word_document:
+    fig_caption: yes
+    fig_width: 7
+    toc: yes
 subtitle: 'Dépouillement question par question, partie 2 : ALTERNANCE +'
 ---
 
@@ -125,7 +125,7 @@ Il y a `r numc` répondants à cette question
 
 ```{r}
 
-kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2, row.names = FALSE)
 ```
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
@@ -133,5 +133,40 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 ```{r}
 plot2 <- plot + labs(x = "", y = "Poucent")
 plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+### 28 Quelles difficultés rencontrez-vous dans votre recherche d'emploi ?
+
+
+```{r, fig.height=lkfigheight}
+res <- getresult("situation_difficultes")
+
+# numc <- res$numcases
+ptable <- res$ptable
+# colnames(ptable) <- c("Réponse", "Effectif", "%")
+# pval <- res$chi2$test1$p.value
+# seuilsignif <- 0.05
+# seuilpeusignif <- 0.1
+# estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+# plot <- res$plot1
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2, row.names = FALSE)
+
+```
+
+### 29 Précisez
+
+
+```{r, fig.height=lkfigheight}
+res <- getresult("X_autre_details")
+
+
+ptable <- res$ptable
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
 ```
 

@@ -210,6 +210,13 @@ assoc.op <- function(opname, listargs) {
 # identify a  warning
 is.warning <- function(x) {"warning" %in% class(x)}
 
+#'
+#' vlookup (as in Excel). each column may be described by its rank or its name
+#'
+vlookup <- function(value, searchtable, searchcol = 1, returncol= 2){
+        searchtable[match(value, searchtable[[searchcol]]), returncol]
+}
+
 
 #'
 #' Functions for filtering out NA's
