@@ -54,10 +54,37 @@ source(file.path(".", mcodir, code1name))
 
 # dir(path = datadir)
 datadir = "data"
+
+#'
+#' ### données principales
+#'
+
 fname1 <- "datajd0620+f.csv"
 fpath1 <- file.path(".", datadir, fname1)
 # read the data in as 'maindf'
 maindf <- read.csv(fpath1, sep=";", na.strings = "")
+
+
+#'
+#' ### données complémentaires 1 (fonction occupée)
+
+fname2 <- "complementactivitestandard.csv"
+fpath2 <- file.path(".", datadir, fname2)
+# read the data in as 'maindf'
+fonctiondf <- read.csv(fpath2, sep=";", na.strings = "")
+
+
+#'
+#' ### données complémentaires 2 (pays_etranger)
+
+fname3 <- "pays_etranger.csv"
+fpath3 <- file.path(".", datadir, fname3)
+# read the data in as 'maindf'
+etrangerdf <- read.csv(fpath3, sep=";", na.strings = "")
+
+
+
+
 
 
 #'
@@ -73,6 +100,37 @@ keepcol <- !grepl(pattern = "^Date_", x = colnames(maindf))
 maindf <- maindf[ , keepcol]
 # eliminer la dernière ligne (vide)==> inutile maintenant
 # maindf <- maindf[ -345,]
+
+
+#'
+#' Réponses et répondants
+#' =======================
+#'
+
+# nombre de diplomés
+ndip <- nrow(maindf)
+
+# colnames(maindf)
+
+
+
+#' trouver les répondants/ nonrépondants
+#' -------------------------------------
+
+# compter le nombre de réponses à partir de la 11è colonne
+maindf$nrep <- sapply(1:nrow(maindf), function(i) sum(!is.na(maindf[i, -(1:10)])) )
+maindf$repondant <- maindf$nrep > 0
+
+#' Table du nombre de réponses et détection des nonrépondants
+# with(maindf, table(nrep))
+
+#' données restreintes aux répondants?
+# repdf <- maindf[maindf$repondant == TRUE, ]
+
+# graphe du nombre de réponses
+# p <- ggplot(repdf,aes(nrep) ) +
+#         geom_bar()
+# p
 
 
 
@@ -717,6 +775,40 @@ maindf[which(maindf$votre_emploi_duree_cdd == -6) , "votre_emploi_duree_cdd"] <-
 # }
 
 
+#'
+#' La fonction
+#' -----------
+#'
+# colnames(fonctiondf)
+maindf$votre_emploi_activite_standard_1 <-
+        vlookup(maindf$Code, fonctiondf, "Code", "activite_standard1")
+maindf$votre_emploi_activite_standard_2 <-
+        vlookup(maindf$Code, fonctiondf, "Code", "activite_standard2") #  demandé par la com'
+
+
+# maindf[maindf$repondant, c("Code",
+#                            "votre_emploi_activite_standard_1",
+#                            "votre_emploi_activite_standard_2")]
+
+ #'
+ #' Le pays
+ #' -----------
+ #'
+ #'
+ # colnames(etrangerdf)
+
+ maindf$votre_emploi_pays <-
+         vlookup(maindf$Code, etrangerdf, "Code", "pays")
+ maindf$votre_emploi_zonegeo <-
+         vlookup(maindf$Code, etrangerdf, "Code", "zone_geo")
+
+
+ # colnames(maindf)
+
+
+
+
+
 
 
 #' Cosmétique: raccourcissement des réponses longues pour les graphes
@@ -770,20 +862,20 @@ maindf$emploi_actuel_type_short <- vlookup(maindf$emploi_actuel_type, emploi_act
 #' Eléments sur la structure de l'échantillon des réponses, sélection des dataframes à exploiter
 #' =============================================================================================
 
-# nombre de diplomés
-ndip <- nrow(maindf)
-
-# colnames(maindf)
-
-#' trouver les répondants/ nonrépondants
-#' -------------------------------------
-
-# compter le nombre de réponses à partir de la 11è colonne
-maindf$nrep <- sapply(1:nrow(maindf), function(i) sum(!is.na(maindf[i, -(1:10)])) )
-maindf$repondant <- maindf$nrep > 0
-
-#' Table du nombre de réponses et détection des nonrépondants
-# with(maindf, table(nrep))
+#' # nombre de diplomés
+#' ndip <- nrow(maindf)
+#'
+#' # colnames(maindf)
+#'
+#' #' trouver les répondants/ nonrépondants
+#' #' -------------------------------------
+#'
+#' # compter le nombre de réponses à partir de la 11è colonne
+#' maindf$nrep <- sapply(1:nrow(maindf), function(i) sum(!is.na(maindf[i, -(1:10)])) )
+#' maindf$repondant <- maindf$nrep > 0
+#'
+#' #' Table du nombre de réponses et détection des nonrépondants
+#' # with(maindf, table(nrep))
 
 #' données restreintes aux répondants?
 repdf <- maindf[maindf$repondant == TRUE, ]
@@ -863,6 +955,8 @@ save(classmaindf, file=classmaindfpath)
 alldatapath <- file.path(".", datadir2, "alldata.Rda")
 
 # enregistrement (Rda)
+message("Saving .Rda")
+
 save( maindf,
       repdf,
       suspectdf,

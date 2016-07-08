@@ -840,6 +840,57 @@ cat1 <- function(dataf, nomfact, useNA = "no",
 }
 
 
+
+
+#'
+#' mocat1 : Multiple Ordered Categorical
+#' --------------------------------------
+#'
+
+#' commented for the time beeing
+
+# variables <- colnames(maindf)[grep("situation_difficultes_", colnames(maindf))]
+#
+# raisons <- c("Difficultés à trouver des offres d'emploi correspondant au projet professionnel",
+#              "Mobilité géographique difficile",
+#              "Méconnaissance des débouchés possibles pour ma formation",
+#              "Manque d'expérience professionnelle",
+#              "Difficulté à mettre en valeur mes compétences",
+#              "Formation mal, ou pas reconnue par les employeurs",
+#              "Formation inadaptée au marché de l'emploi",
+#              "Salaire proposé insuffisant",
+#              "Autre difficulté non mentionnée dans la liste")
+#
+#
+# diffdf <- repdf[variables]
+# for(i in 1: nrow(diffdf)) {diffdf[i, "diff"] <- !all(is.na(diffdf[i,]))}
+# diffdf <- diffdf[diffdf[["diff"]], variables]
+# ncases <- nrow(diffdf)
+#
+#
+# nbcit <- sapply(X = diffdf, FUN = function(x) length(nonavect(x)))
+# percases <- 100* round(nbcit/nbcases,2) # % des individus
+# percit <- 100* round(nbcit/sum(nbcit),2) # % des citations
+# rangmed = sapply(X = diffdf, FUN = function(x) median(nonavect(x))) # % des citations
+#
+#
+# raisdf <- data.frame(raisons, nbcit, percases, percit, rangmed)
+# colnames(raisdf) <- c("raisons", "citations", "% individus", "% citations", "rang median")
+# raisdf <- raisdf[ order(raisdf[["% citations"]], decreasing = TRUE ), ]
+#
+# res=make.result( name = "situation_difficultes",
+#                  numcases = ncases,
+#                  ptable = raisdf)
+# setresult("situation_difficultes")
+
+
+
+
+
+
+
+
+
 #' num1d = 1 numeric d(iscrete)
 #' -------------------------------------------------------------------------
 

@@ -247,9 +247,9 @@ setresult('situation_nombre_refus')
 # # setresult('situation_difficultes_autres')
 
 
+# ==================================================================================== a revoir
 
-
-
+# 28 traitement de la question à réponses multiples ordonnées
 variables <- colnames(maindf)[grep("situation_difficultes_", colnames(maindf))]
 
 raisons <- c("Difficultés à trouver des offres d'emploi correspondant au projet professionnel",
@@ -265,22 +265,23 @@ raisons <- c("Difficultés à trouver des offres d'emploi correspondant au proje
 
 diffdf <- repdf[variables]
 
+
 nbcit <- sapply(X = diffdf, FUN = function(x) length(nonavect(x)))
 percit <- 100* round(nbcit/sum(nbcit),2)
 rangmed = sapply(X = diffdf, FUN = function(x) median(nonavect(x)))
+rm(diffdf)
 
-raisdf <- cbind(correp, as.data.frame(nbcit, percit, rangmed))
+raisdf <- data.frame(raisons,nbcit, percit, rangmed)
+colnames(raisdf) <- c("raisons", "citations", "% citations", "rang median")
+raisdf <- raisdf[ order(raisdf[["% citations"]], decreasing = TRUE ), ]
 
-# as.data.frame(nbcit)
-# as.data.frame(percit)
-# as.data.frame(rangmed)
-synth <- cbind(raisons, as.data.frame(nbcit),as.data.frame(percit),as.data.frame(rangmed))
-rownames(synth) <- NULL
-colnames(synth) <- c("raisons", "citations", "% citations", "rang median")
-synth <- synth[ order(synth[["% citations"]], decreasing = TRUE ), ]
-
-res=make.result(ptable = synth)
+res=make.result(ptable = raisdf)
 setresult("situation_difficultes")
+
+
+
+
+
 
 res <- verbatim(maindf, nomfact="X_autre_details")
 setresult('X_autre_details')
