@@ -795,13 +795,31 @@ maindf$votre_emploi_activite_standard_2 <-
  #' -----------
  #'
  #'
- # colnames(etrangerdf)
+ # colnames(etrangerdf) # **********************************************************
 
  maindf$votre_emploi_pays <-
          vlookup(maindf$Code, etrangerdf, "Code", "pays")
  maindf$votre_emploi_zonegeo <-
          vlookup(maindf$Code, etrangerdf, "Code", "zone_geo")
 
+ levels(maindf$votre_emploi_zonegeo)
+
+ levels(maindf$votre_emploi_zonegeo) <- c(levels(maindf$votre_emploi_zonegeo), "France")
+
+# completion des pays/zones
+maindf$france_etranger = ifelse(!is.na(maindf$votre_emploi_pays),"Etranger",
+                                ifelse(maindf$situation_emploi=="En activité professionnelle",
+                                       "France",
+                                       NA ))
+
+maindf$votre_emploi_zonegeo = ifelse(!is.na(maindf$votre_emploi_zonegeo), maindf$votre_emploi_zonegeo,
+                                ifelse(maindf$situation_emploi=="En activité professionnelle",
+                                       "France",
+                                       NA ))
+maindf$votre_emploi_pays = ifelse(!is.na(maindf$votre_emploi_pays), maindf$votre_emploi_pays,
+                                     ifelse(maindf$situation_emploi=="En activité professionnelle",
+                                            "France",
+                                            NA ))
 
  # colnames(maindf)
 
@@ -867,7 +885,7 @@ maindf$emploi_actuel_type_short <- vlookup(maindf$emploi_actuel_type, emploi_act
 #'
 #' # colnames(maindf)
 #'
-#' #' trouver les répondants/ nonrépondants
+#' #' trouver les répondants/ nonrépondants ==F fait maintenant au début
 #' #' -------------------------------------
 #'
 #' # compter le nombre de réponses à partir de la 11è colonne

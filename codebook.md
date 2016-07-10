@@ -291,6 +291,16 @@ PREMIERES QUESTIONS SUR VOTRE EMPLOI ACTUEL
 * 42 Depuis combien de temps occupez-vous cet emploi ? *emploi_actuel_temps_poste*  (0) **[?]** (REM XXXXXXXXXX)
 
 
+### variables ajoutées
+
+
+* france_etranger
+* votre_emploi_zonegeo
+* votre_emploi_pays
+
+
+
+
 INFORMATIONS SUR VOTRE ENTREPRISE
 ---------------------------------
 
@@ -376,6 +386,9 @@ INFORMATIONS SUR VOTRE EMPLOI
     - Recherche expérimentale
     - Enseignement - Formation
     - Autre
+    
+* 54(bis) + 54 (ter ) Quelle est votre activité principale ? *votre_emploi_activite* (118) **[cat]**
+recodage des précédentes
 
 * 55 Quel est votre contrat de travail ? *votre_emploi_type_contrat* **[cat]**
     - CDI (Contrat à durée indéterminée)

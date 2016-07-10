@@ -9,9 +9,9 @@ output:
     theme: readable
   word_document:
     fig_caption: yes
-    fig_width: 7
-    toc: yes
-subtitle: 'Dépouillement question par question, partie 2 : ALTERNANCE +'
+    fig_width: 9
+    toc: no
+subtitle: Dépouillement,  essais
 ---
 
 
@@ -139,21 +139,27 @@ plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
 ### 28 Quelles difficultés rencontrez-vous dans votre recherche d'emploi ?
 
 
-```{r, fig.height=lkfigheight}
+```{r , fig.width = lkfigwidth}
 res <- getresult("situation_difficultes")
 
-# numc <- res$numcases
+numc <- res$numcases
 ptable <- res$ptable
-# colnames(ptable) <- c("Réponse", "Effectif", "%")
-# pval <- res$chi2$test1$p.value
-# seuilsignif <- 0.05
-# seuilpeusignif <- 0.1
-# estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
 
 
-# plot <- res$plot1
+```{r}
 
 kable(ptable, caption = "Table des réponses", align = 'c', digits = 2, row.names = FALSE)
+
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r,fig.width = lkfigwidth}
+with(res, eval(plot)) #multiplot   
 
 ```
 
@@ -170,3 +176,175 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 
 ```
 
+
+
+### 53(bis)  Quelle est votre fonction précise? (recodage 1) {-}
+Les réponses ouvertes des diplômés ont été recodées selon une nomenclature type CGE. 
+Voir la question suivante pour une nomenclature différente
+
+
+```{r}
+res <- getresult("votre_emploi_activite_standard_1")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot
+plot2
+
+```
+
+
+
+### 53(ter)  Quelle est votre fonction précise? (recodage 2) {-}
+Les réponses ouvertes des diplômés ont été recodées selon une autre nomenclature.
+
+```{r}
+res <- getresult("votre_emploi_activite_standard_2")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot
+plot2
+
+```
+
+
+
+Dimension internationale
+----------------------------
+
+### France-Etranger
+
+
+```{r}
+res <- getresult("france_etranger")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot
+plot2
+
+```
+
+
+
+
+
+### Zones géographiques
+
+
+```{r}
+res <- getresult("votre_emploi_zonegeo")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot
+plot2
+
+```
+
+
+
+### Pays
+
+
+```{r}
+res <- getresult("votre_emploi_pays")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot
+plot2
+
+```

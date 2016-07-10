@@ -908,44 +908,63 @@ cat1 <- function(dataf, nomfact, useNA = "no",
 #' --------------------------------------
 #'
 
-mocat1 <- function(dataf, prefix, valvect, valname = NULL) {
-        variables <- grep(prefix, colnames(dataf))
-        # names(valvect) <- variables # for use in graphs
-        corrtable <- data.frame(colnames(dataf)[variables],
-                                valvect) # for use in graphs
-        print(corrtable) #dbg
-        # print(variables) #dbg
-        # keep only useful cols
-        dataf1 <- dataf[ , variables]
 
+mocat1 <- function(dataf, prefix, valvect = NULL, valshort = NULL, valname = NULL) {
+        variables <- grep(prefix, colnames(dataf), value = TRUE) # => the relevant cols names
+        if (is.null(valvect)) {valvect <- variables}
+        if (is.null(valshort)) {valshort <- valvect}
+        if (is.null(valname)) {valname <- prefix}
+        # verify
+        if (length(variables) != length(valvect) |
+            length(variables) != length(valshort)){
+                error(" mocat1 : argument lengths mismatch")
+        }
+        corrtable <- data.frame(variable = variables,
+                                valvect,
+                                valshort) # correspondance table for use in graphs and tables
+
+        # Data: keep only useful cols
+        dataf <- dataf[ , variables]
         # keep only useful rows
-        isuseful <- rep(TRUE, nrow(dataf1))
-        for(i in 1:nrow(dataf1))
-        {isuseful[i] <- !all(is.na(dataf1[i, ]))}
+        isuseful <- rep(TRUE, nrow(dataf)) #initialisation
+        for(i in 1:nrow(dataf))
+        {isuseful[i] <- !all(is.na(dataf[i, ]))}
+        dataf <- dataf[isuseful, ]
 
-        # print(isuseful) #dbg
+        ncases <- nrow(dataf) # nombre de cas
 
-        dataf1 <- dataf1[isuseful, ]
-        ncases <- nrow(dataf1)
-        # compute stats
-        nbcit <- sapply(X = dataf1, FUN = function(x) length(nonavect(x)))
-        percases <- 100* round(nbcit/ncases,2) # % des individus
-        percit <- 100* round(nbcit/sum(nbcit),2) # % des citations
-        rangmed = sapply(X = dataf1, FUN = function(x) median(nonavect(x))) # % des citations
-        resdf <- data.frame(valvect, nbcit, percases, percit, rangmed)
-        colnames(resdf) <- c(valname, "citations", "% individus", "% citations", "rang median")
-        resdf <- resdf[ order(resdf[["citations"]], decreasing = TRUE ), ]
-        #
-        ## make the graph(s)
-        lresdf <- melt(dataf1)
-        lresdf <- nonadf(lresdf,"value")
-        lresdf$variable <- vlookup(lresdf$variable, searchtable = corrtable)
-        # order the factor in reverse because of coord_flip
-        lresdf$variable <- orderfact(lresdf , "variable", orderdesc = FALSE)
+        ## make the graph(s): long format for the ranks dfrm
+        lresdf <- melt(dataf)
+        lresdf <- nonadf(lresdf,"value") # get rid of NA's
 
-        p1 <- ggplot(lresdf, aes(variable)) +
-                geom_bar(aes(y = 100*..count.. / sum(..count..))) +
-                # scale_x_discrete(labels = valvect) +
+        # order the factor in reverse because of coord_flip. useful ?
+        #lresdf$variable <- orderfact(lresdf , "variable", orderdesc = FALSE) ## ? useful? NO
+
+        # compute % of individuals and citations explicitly, record the variable values in lims
+        restable <- group_by(lresdf, variable) %>%
+                summarise(nbcit = n(),
+                          rangmed = median(value)) %>%
+                arrange(desc(nbcit)) %>%
+                mutate(percases = 100 * nbcit / ncases,
+                       percit = 100 * nbcit / sum(nbcit))
+
+        restable$valnames <- vlookup(restable$variable, searchtable = corrtable,
+                                     searchcol = "variable", returncol = "valvect")
+        restable$shortname <- vlookup(restable$variable, searchtable = corrtable,
+                                      searchcol = "variable", returncol = "valshort")
+
+        # printable table
+        ptable <- select(restable, valnames, nbcit, percases, percit, rangmed)
+        colnames(ptable) <- c(valname, "citations", "% individus", "% citations", "rang median")
+
+        lims <- restable$variable # to ensure both plots have the same category order
+        graphlabels <- as.character(restable$shortname) # short names, in the same order as lims !! as character !
+        names(graphlabels) <- lims # (to be sure and not to depend on order later)
+
+
+        p1 <- ggplot(restable, aes(variable, percases)) +
+                geom_bar(stat="identity") +
+                scale_x_discrete(limits = rev(lims), labels = graphlabels) + #labels = graphlabels
                 labs(y = "% individus", x = valname) +
                 coord_flip()
 
@@ -953,25 +972,28 @@ mocat1 <- function(dataf, prefix, valvect, valname = NULL) {
                 geom_violin() +
                 geom_jitter(height = 0.3, width = 0.5,
                             alpha = 0.4, color = "steelblue") +
-                scale_x_discrete(labels = NULL) +
+                scale_x_discrete(labels = NULL,
+                                 limits=rev(lims)) +
                 labs(x = NULL, y = 'Rang citation') +
                 coord_flip()
-        # function for displaying the multiplot
-        # display.multiplot <- function(){
-        #         multiplot(p1, p2, cols = 2)
-        # }
 
         make.result( name = prefix,
                      numcases = ncases,
-                     ptable = resdf,
-                     plot = quote(multiplot(plot1, plot2, cols = 2)), # code
-                     # plot = quote(display.multiplot()),
+                     ptable = ptable,
+                     # plot = quote(multiplot(plot1, plot2, cols = 2)), # autre code possible
+                     plot = quote(multiplot(plot1, plot2,
+                                            layout = matrix(c(1, 1, 2), nrow = 1, byrow = TRUE))), # code
                      plot1 = p1,
                      plot2 = p2 )
 }
 
 
-# setresult("situation_difficultes")
+
+# setresult("situation_difficultes") # code that should be in 'depouillement
+#
+# Variant for multiplot
+# layout <- matrix(c(1, 1, 2, 3, 4, 5), nrow = 2, byrow = TRUE)
+# multiplot(plotlist = plots, layout = layout)
 
 
 

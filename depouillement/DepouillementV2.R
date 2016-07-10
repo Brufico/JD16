@@ -251,7 +251,8 @@ setresult('situation_nombre_refus')
 # ==================================================================================== a revoir
 
 # 28 traitement de la question à réponses multiples ordonnées
-variables <- colnames(maindf)[grep("situation_difficultes_", colnames(maindf))]
+
+# variables <- colnames(maindf)[grep("situation_difficultes_", colnames(maindf))]
 
 raisons <- c("Difficultés à trouver des offres d'emploi correspondant au projet professionnel",
              "Mobilité géographique difficile",
@@ -264,50 +265,32 @@ raisons <- c("Difficultés à trouver des offres d'emploi correspondant au proje
              "Autre difficulté non mentionnée dans la liste")
 
 
-diffdf <- repdf[variables]
+raisons_short <- c("offres d'emploi // projet pro",
+                   "Mobilité géo. difficile",
+                   "Débouchés pour ma formation?",
+                   "Manque d'expérience pro.",
+                   "Difficulté faire valoir compétences",
+                   "Formation malreconnue par employeurs",
+                   "Formation inadaptée  marché de l'emploi",
+                   "Salaire insuffisant",
+                   "Autre difficulté")
 
 
-nbcit <- sapply(X = diffdf, FUN = function(x) length(nonavect(x)))
-percit <- 100* round(nbcit/sum(nbcit),2)
-rangmed = sapply(X = diffdf, FUN = function(x) median(nonavect(x)))
-rm(diffdf)
 
-raisdf <- data.frame(raisons,nbcit, percit, rangmed)
-colnames(raisdf) <- c("raisons", "citations", "% citations", "rang median")
-raisdf <- raisdf[ order(raisdf[["% citations"]], decreasing = TRUE ), ]
-
-res=make.result(ptable = raisdf)
+res <- mocat1(dataf = maindf,
+              prefix = "situation_difficultes_",
+              valvect = raisons,
+              valshort = raisons_short,
+              valname = "Raison")
 setresult("situation_difficultes")
 
 
 
-
-
-
+#-----------------------------------------------------
 res <- verbatim(maindf, nomfact="X_autre_details")
 setresult('X_autre_details')
 
-
-
-
-
-
-
-
-
-
-
-
-#-------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
+#-----------------------------------------------------
 
 
 
@@ -332,7 +315,7 @@ setresult('situation_etudes_raison_short')
 
 ### Si En activité professionnelle
 
-#### caractériqtiques générales de l'emploi
+#### caractéristiques générales de l'emploi
 
 res <- cat1(dataf=maindf, nomfact="emploi_actuel_premier_second", useNA = "no", orderfreq = FALSE)
 setresult('emploi_actuel_premier_second')
@@ -378,6 +361,11 @@ setresult('emploi_actuel_type_short')
 # -----------------------------------------------------------------------------
 
 
+
+
+
+
+
 #' Les diplômés en poste
 #' ----------------------
 
@@ -390,7 +378,6 @@ setresult('entreprise_secteur')
 res <- cat1(dataf=maindf, nomfact="entreprise_secteur_letudiant", useNA = "no", orderfreq = TRUE)
 setresult('entreprise_secteur_letudiant')
 
-
 res <- cat1(dataf=maindf, nomfact="entreprise_secteur_principal", useNA = "no", orderfreq = FALSE)
 setresult('entreprise_secteur_principal')
 
@@ -400,13 +387,36 @@ setresult('entreprise_taille')
 
 ### L'emploi
 
+#### pays et zones géographiques
+
+res <- cat1(dataf=maindf, nomfact="france_etranger", useNA = "no", orderfreq = TRUE)
+setresult('france_etranger')
+
+res <- cat1(dataf=maindf, nomfact="votre_emploi_zonegeo", useNA = "no", orderfreq = TRUE)
+setresult('votre_emploi_zonegeo')
+
+res <- cat1(dataf=maindf, nomfact="votre_emploi_pays", useNA = "no", orderfreq = TRUE)
+setresult('votre_emploi_pays')
+
+
 #### fonction
 
+# questions ouvertes -----------------------------------------------------------
 res <- verbatim(dataf=maindf, nomfact="votre_emploi_fonction")
 # setresult('votre_emploi_fonction')
 
 res <- cat1(dataf=maindf, nomfact="votre_emploi_activite", useNA = "no", orderfreq = TRUE)
 setresult('votre_emploi_activite')
+
+# recodage questions ouvertes --------------------------------------------------
+
+res <- cat1(dataf=maindf, nomfact="votre_emploi_activite_standard_1", useNA = "no", orderfreq = TRUE)
+setresult('votre_emploi_activite_standard_1')
+
+res <- cat1(dataf=maindf, nomfact="votre_emploi_activite_standard_2", useNA = "no", orderfreq = TRUE)
+setresult('votre_emploi_activite_standard_2')
+
+
 
 ##### le contrat
 res <- cat1(dataf=maindf, nomfact="votre_emploi_type_contrat", useNA = "no", orderfreq = TRUE)
