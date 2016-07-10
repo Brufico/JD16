@@ -26,7 +26,7 @@ library(knitr)
 
 library(ggplot2)
 library(dplyr)
-
+library(reshape2)
 
 
 #' Constants and default options settings
@@ -610,7 +610,8 @@ cbydboxjit <- function(dataf, vard, varc, useNA = "no",
 
 
 
-# continuous by factor density plot
+#' continuous by factor density plot
+#'
 cbyfdensity <- function(dataf, varf, varc, useNA = "no") {
         if (useNA == "no") {
                 dataf <- dataf[!is.na(dataf[[varf]]) & !is.na(dataf[[varc]]), ]
@@ -621,7 +622,8 @@ cbyfdensity <- function(dataf, varf, varc, useNA = "no") {
 }
 
 
-# freqpoly
+#' freqpoly
+#'
 cbyffreqpoly <- function(dataf, varf, varc, useNA = "no", size = 1) {
         if (useNA == "no") {
                 dataf <- dataf[!is.na(dataf[[varf]]) & !is.na(dataf[[varc]]), ]
@@ -632,6 +634,8 @@ cbyffreqpoly <- function(dataf, varf, varc, useNA = "no", size = 1) {
 }
 
 
+#' dodgeded histogram
+#'
 
 cbyfhistogram <- function(dataf, varf, varc, useNA = "no",
                           usedensity = FALSE, usendensity = FALSE, ...) {
@@ -650,8 +654,8 @@ cbyfhistogram <- function(dataf, varf, varc, useNA = "no",
 }
 
 
-# faceted histogram
-#
+#' faceted histogram
+#'
 cbyffachistogram <- function(dataf, varf, varc, useNA = "no",
                              usedensity = FALSE, usendensity = FALSE, ...) {
         if (useNA == "no") {
@@ -672,6 +676,63 @@ cbyffachistogram <- function(dataf, varf, varc, useNA = "no",
         form <- as.formula(paste0(varf,"~."))
         p+ facet_grid(form)
 }
+
+
+
+
+
+#'
+#' Multiple plot function
+#' ---------------------------
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+        library(grid)
+
+        # Make a list from the ... arguments and plotlist
+        plots <- c(list(...), plotlist)
+
+        numPlots = length(plots)
+
+        # If layout is NULL, then use 'cols' to determine layout
+        if (is.null(layout)) {
+                # Make the panel
+                # ncol: Number of columns of plots
+                # nrow: Number of rows needed, calculated from # of cols
+                layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                                 ncol = cols, nrow = ceiling(numPlots/cols))
+        }
+
+        if (numPlots==1) {
+                print(plots[[1]])
+
+        } else {
+                # Set up the page
+                grid.newpage()
+                pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+                # Make each plot, in the correct location
+                for (i in 1:numPlots) {
+                        # Get the i,j matrix positions of the regions that contain this subplot
+                        matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+                        print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                                        layout.pos.col = matchidx$col))
+                }
+        }
+}
+
+
+
+
+
 
 
 
@@ -847,40 +908,69 @@ cat1 <- function(dataf, nomfact, useNA = "no",
 #' --------------------------------------
 #'
 
-#' commented for the time beeing
+mocat1 <- function(dataf, prefix, valvect, valname = NULL) {
+        variables <- grep(prefix, colnames(dataf))
+        # names(valvect) <- variables # for use in graphs
+        corrtable <- data.frame(colnames(dataf)[variables],
+                                valvect) # for use in graphs
+        print(corrtable) #dbg
+        # print(variables) #dbg
+        # keep only useful cols
+        dataf1 <- dataf[ , variables]
 
-# variables <- colnames(maindf)[grep("situation_difficultes_", colnames(maindf))]
-#
-# raisons <- c("Difficultés à trouver des offres d'emploi correspondant au projet professionnel",
-#              "Mobilité géographique difficile",
-#              "Méconnaissance des débouchés possibles pour ma formation",
-#              "Manque d'expérience professionnelle",
-#              "Difficulté à mettre en valeur mes compétences",
-#              "Formation mal, ou pas reconnue par les employeurs",
-#              "Formation inadaptée au marché de l'emploi",
-#              "Salaire proposé insuffisant",
-#              "Autre difficulté non mentionnée dans la liste")
-#
-#
-# diffdf <- repdf[variables]
-# for(i in 1: nrow(diffdf)) {diffdf[i, "diff"] <- !all(is.na(diffdf[i,]))}
-# diffdf <- diffdf[diffdf[["diff"]], variables]
-# ncases <- nrow(diffdf)
-#
-#
-# nbcit <- sapply(X = diffdf, FUN = function(x) length(nonavect(x)))
-# percases <- 100* round(nbcit/nbcases,2) # % des individus
-# percit <- 100* round(nbcit/sum(nbcit),2) # % des citations
-# rangmed = sapply(X = diffdf, FUN = function(x) median(nonavect(x))) # % des citations
-#
-#
-# raisdf <- data.frame(raisons, nbcit, percases, percit, rangmed)
-# colnames(raisdf) <- c("raisons", "citations", "% individus", "% citations", "rang median")
-# raisdf <- raisdf[ order(raisdf[["% citations"]], decreasing = TRUE ), ]
-#
-# res=make.result( name = "situation_difficultes",
-#                  numcases = ncases,
-#                  ptable = raisdf)
+        # keep only useful rows
+        isuseful <- rep(TRUE, nrow(dataf1))
+        for(i in 1:nrow(dataf1))
+        {isuseful[i] <- !all(is.na(dataf1[i, ]))}
+
+        # print(isuseful) #dbg
+
+        dataf1 <- dataf1[isuseful, ]
+        ncases <- nrow(dataf1)
+        # compute stats
+        nbcit <- sapply(X = dataf1, FUN = function(x) length(nonavect(x)))
+        percases <- 100* round(nbcit/ncases,2) # % des individus
+        percit <- 100* round(nbcit/sum(nbcit),2) # % des citations
+        rangmed = sapply(X = dataf1, FUN = function(x) median(nonavect(x))) # % des citations
+        resdf <- data.frame(valvect, nbcit, percases, percit, rangmed)
+        colnames(resdf) <- c(valname, "citations", "% individus", "% citations", "rang median")
+        resdf <- resdf[ order(resdf[["citations"]], decreasing = TRUE ), ]
+        #
+        ## make the graph(s)
+        lresdf <- melt(dataf1)
+        lresdf <- nonadf(lresdf,"value")
+        lresdf$variable <- vlookup(lresdf$variable, searchtable = corrtable)
+        # order the factor in reverse because of coord_flip
+        lresdf$variable <- orderfact(lresdf , "variable", orderdesc = FALSE)
+
+        p1 <- ggplot(lresdf, aes(variable)) +
+                geom_bar(aes(y = 100*..count.. / sum(..count..))) +
+                # scale_x_discrete(labels = valvect) +
+                labs(y = "% individus", x = valname) +
+                coord_flip()
+
+        p2 <- ggplot(lresdf, aes(variable, value)) +
+                geom_violin() +
+                geom_jitter(height = 0.3, width = 0.5,
+                            alpha = 0.4, color = "steelblue") +
+                scale_x_discrete(labels = NULL) +
+                labs(x = NULL, y = 'Rang citation') +
+                coord_flip()
+        # function for displaying the multiplot
+        # display.multiplot <- function(){
+        #         multiplot(p1, p2, cols = 2)
+        # }
+
+        make.result( name = prefix,
+                     numcases = ncases,
+                     ptable = resdf,
+                     plot = quote(multiplot(plot1, plot2, cols = 2)), # code
+                     # plot = quote(display.multiplot()),
+                     plot1 = p1,
+                     plot2 = p2 )
+}
+
+
 # setresult("situation_difficultes")
 
 

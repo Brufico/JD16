@@ -286,6 +286,30 @@ mc$plot +
 # get pvalue
 mc$chi2$test1$p.value
 
+# mocat ==================================================================
+
+# dans l'enquete jd 16
+
+
+raisons <- c("Difficultés à trouver des offres d'emploi correspondant au projet professionnel",
+             "Mobilité géographique difficile",
+             "Méconnaissance des débouchés possibles pour ma formation",
+             "Manque d'expérience professionnelle",
+             "Difficulté à mettre en valeur mes compétences",
+             "Formation mal, ou pas reconnue par les employeurs",
+             "Formation inadaptée au marché de l'emploi",
+             "Salaire proposé insuffisant",
+             "Autre difficulté non mentionnée dans la liste")
+
+
+res <- mocat1(dataf = maindf,
+              prefix = "situation_difficultes_",
+              valvect = raisons)
+View(res$ptable)
+
+
+
+
 
 
 
