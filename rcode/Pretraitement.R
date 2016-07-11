@@ -790,38 +790,73 @@ maindf$votre_emploi_activite_standard_2 <-
 #                            "votre_emploi_activite_standard_1",
 #                            "votre_emploi_activite_standard_2")]
 
- #'
- #' Le pays
- #' -----------
- #'
- #'
- # colnames(etrangerdf) # **********************************************************
+#'
+#' Le pays
+#' -----------
+#'
+#'
+# colnames(etrangerdf) # **********************************************************
 
- maindf$votre_emploi_pays <-
+maindf$votre_emploi_pays <-
          vlookup(maindf$Code, etrangerdf, "Code", "pays")
- maindf$votre_emploi_zonegeo <-
+maindf$votre_emploi_zonegeo <-
          vlookup(maindf$Code, etrangerdf, "Code", "zone_geo")
 
- levels(maindf$votre_emploi_zonegeo)
+# levels(maindf$votre_emploi_zonegeo)
 
- levels(maindf$votre_emploi_zonegeo) <- c(levels(maindf$votre_emploi_zonegeo), "France")
+levels(maindf$votre_emploi_zonegeo) <- c(levels(maindf$votre_emploi_zonegeo), "France")
+levels(maindf$votre_emploi_pays) <- c(levels(maindf$votre_emploi_pays), "France")
 
 # completion des pays/zones
-maindf$france_etranger = ifelse(!is.na(maindf$votre_emploi_pays),"Etranger",
+#
+maindf$france_etranger <- ifelse(!is.na(maindf$votre_emploi_pays),"Etranger",
                                 ifelse(maindf$situation_emploi=="En activité professionnelle",
                                        "France",
                                        NA ))
 
-maindf$votre_emploi_zonegeo = ifelse(!is.na(maindf$votre_emploi_zonegeo), maindf$votre_emploi_zonegeo,
-                                ifelse(maindf$situation_emploi=="En activité professionnelle",
-                                       "France",
-                                       NA ))
-maindf$votre_emploi_pays = ifelse(!is.na(maindf$votre_emploi_pays), maindf$votre_emploi_pays,
-                                     ifelse(maindf$situation_emploi=="En activité professionnelle",
-                                            "France",
-                                            NA ))
+# problématique: # de niveaux retournés
+# maindf$votre_emploi_zonegeo  <-  ifelse(!is.na(maindf$votre_emploi_zonegeo),
+#                                         maindf$votre_emploi_zonegeo,
+#                                         ifelse(maindf$situation_emploi=="En activité professionnelle",
+#                                                "France",
+#                                                NA ))
+#--------idem
+# maindf$votre_emploi_pays  <-  ifelse(!is.na(maindf$votre_emploi_pays), maindf$votre_emploi_pays,
+#                                      ifelse(maindf$situation_emploi=="En activité professionnelle",
+#                                             "France",
+#                                             NA ))
 
- # colnames(maindf)
+# try -------------------------------------------------------------------------------------
+
+
+for (i in 1:nrow(maindf)) {
+        if (!is.na(maindf[i, "situation_emploi"])) {
+                if (maindf[i, "situation_emploi"]=="En activité professionnelle" &
+                    is.na(maindf[i, "votre_emploi_zonegeo"]) ) {
+                        maindf[i, "votre_emploi_zonegeo"] <- "France"
+                }
+        }
+}
+
+
+# levels(maindf[["votre_emploi_zonegeo"]])
+# table(maindf[["votre_emploi_zonegeo"]])
+# class(maindf[["votre_emploi_zonegeo"]])
+
+for (i in 1:nrow(maindf)) {
+        if (!is.na(maindf[i, "situation_emploi"])) {
+                if (maindf[i, "situation_emploi"]=="En activité professionnelle" &
+                    is.na(maindf[i, "votre_emploi_pays"]) ) {
+                        maindf[i, "votre_emploi_pays"] <- "France"
+                }
+        }
+}
+
+# verif
+# levels(maindf[["votre_emploi_pays"]])
+# table(maindf[["votre_emploi_pays"]])
+
+# colnames(maindf)
 
 
 
@@ -876,6 +911,26 @@ emploi_actuel_type_corrtable <- data.frame(type,typeshort)
 
 maindf$emploi_actuel_type_short <- vlookup(maindf$emploi_actuel_type, emploi_actuel_type_corrtable)
 
+
+
+#'
+#'  situation_situation==> situation_situation_short
+#' -----------------------------------------------------
+#'
+
+# levels(repdf$situation_situation)
+shortsit <- c("activité pro.", "création d'entreprise","poursuite etudes",
+              "recherche d'emploi", "Sans activité volontaire")
+
+maindf$situation_situation_short <- maindf$situation_situation
+levels(maindf$situation_situation_short) <- shortsit
+
+maindf$situation_situation_short <- orderfact(maindf, "situation_situation_short",
+          nlevels = c("activité pro.", "création d'entreprise","poursuite etudes",
+                      "Sans activité volontaire","recherche d'emploi"))
+
+
+
 #'
 #' Eléments sur la structure de l'échantillon des réponses, sélection des dataframes à exploiter
 #' =============================================================================================
@@ -885,7 +940,7 @@ maindf$emploi_actuel_type_short <- vlookup(maindf$emploi_actuel_type, emploi_act
 #'
 #' # colnames(maindf)
 #'
-#' #' trouver les répondants/ nonrépondants ==F fait maintenant au début
+#' #' trouver les répondants/ nonrépondants == F fait maintenant au début
 #' #' -------------------------------------
 #'
 #' # compter le nombre de réponses à partir de la 11è colonne
@@ -895,27 +950,33 @@ maindf$emploi_actuel_type_short <- vlookup(maindf$emploi_actuel_type, emploi_act
 #' #' Table du nombre de réponses et détection des nonrépondants
 #' # with(maindf, table(nrep))
 
-#' données restreintes aux répondants?
-repdf <- maindf[maindf$repondant == TRUE, ]
 
 # graphe du nombre de réponses
-p <- ggplot(repdf,aes(nrep) ) +
-        geom_bar()
-p
+# p <- ggplot(repdf,aes(nrep) ) +
+#         geom_bar()
+# p
 
 # essais??
 # ggplot(repdf,aes(nrep) ) +
 #         geom_bar()+ facet_grid(situation_situation ~ .)
-#
-# ggplot(repdf,aes(situation_situation, nrep) ) +
-#         geom_boxplot(varwidth = TRUE, aes(group=1, fill = "ensemble")) +
-#         geom_boxplot(varwidth = TRUE, aes(fill = "par situation")) +
-#         geom_jitter(width = .5) +
-#         coord_flip()
 
 
+#' Données restreintes (strates)
+#' -----------------------------
+#'
+#' données restreintes aux répondants
+# repdf <- maindf[maindf$repondant == TRUE, ]
+repdf <- filter(maindf, repondant == TRUE)
 
+#' ### par situation
+#'
+#' données restreintes aux diplomés sur le marché de l'emploi
+emploidf <- filter(repdf, !is.na(situation_emploi))
 
+#' données restreintes aux diplomés en activité professionnelle
+actidf <- filter(emploidf, situation_emploi == "En activité professionnelle")
+#' données restreintes aux diplomés en recherche d'emploi
+rechdf <- filter(emploidf, situation_emploi == "En recherche d'emploi")
 
 
 #' Sauvegardes des données prétraitées
@@ -930,14 +991,23 @@ if (!dir.exists(datadir2)) {dir.create(datadir2)}
 # files
 maindffile <- "maindf.csv"
 repdffile <- "repdf.csv"
+emploidffile <- "emploidf.csv"
+actidffile <- "actidf.csv"
+rechdffile <- "rechdf.csv"
 
 # paths (cvs)
 maindfpath <- file.path(".", datadir2, maindffile)
 repdfpath <- file.path(".", datadir2, repdffile)
+emploidfpath <- file.path(".", datadir2, emploidffile)
+actidfpath <- file.path(".", datadir2, actidffile)
+rechdfpath <- file.path(".", datadir2, rechdffile)
 
 suspectdfpath <- file.path(".", datadir2, "suspectdf.csv")
 verifdfpath <- file.path(".", datadir2, "verifdf.csv")
 corrigdfpath <- file.path(".", datadir2, "corrigdf.csv")
+
+
+
 
 # path(rda)
 classmaindfpath <- file.path(".", datadir2, "classmaindf.Rda")
@@ -956,6 +1026,9 @@ classmaindf <- unlist(classmaindf)
 # enregistrement des données et des tables de correction et de vérification sous forme cvs
 write.table(x = maindf, file = maindfpath, sep=";", row.names = FALSE)
 write.table(x = repdf, file = repdfpath, sep=";", row.names = FALSE)
+write.table(x = emploidf, file = emploidfpath, sep=";", row.names = FALSE)
+write.table(x = actidf, file = actidfpath, sep=";", row.names = FALSE)
+write.table(x = rechdf, file = rechdfpath, sep=";", row.names = FALSE)
 
 write.table(x = suspectdf, file = suspectdfpath, sep=";", row.names = FALSE)
 write.table(x = verifdf, file = verifdfpath, sep=";", row.names = FALSE)
@@ -977,6 +1050,9 @@ message("Saving .Rda")
 
 save( maindf,
       repdf,
+      emploidf,
+      actidf,
+      rechdf,
       suspectdf,
       verifdf,
       corrigdf,

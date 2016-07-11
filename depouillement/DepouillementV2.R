@@ -58,6 +58,11 @@ whatload <- load(alldatapath)
 #whatload
 
 
+# verification (temp)
+# maindf$votre_emploi_pays
+# maindf$votre_emploi_zonegeo
+
+
 #'
 #'Fonctions pour le dépouillement question par question
 #'===================================================
@@ -126,7 +131,6 @@ setresult('centre')
 #' Le nombre des réponses
 #' ----------------------
 #'
-
 res <- num1d(dataf=repdf, nomvar = "nrep", useNA = "no")
 setresult('nrep')
 
@@ -134,13 +138,13 @@ setresult('nrep')
 #'Le stage de fin d'études
 #'-----------------------
 #'
-res <- cat1(dataf=maindf, nomfact="stg_fin_etude_proposition", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="stg_fin_etude_proposition", useNA = "no", orderfreq = FALSE)
 setresult('stg_fin_etude_proposition')
 
-res <- cat1(dataf=maindf, nomfact="stg_fin_etude_accepte", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="stg_fin_etude_accepte", useNA = "no", orderfreq = FALSE)
 setresult('stg_fin_etude_accepte')
 
-res <- verbatim(dataf=maindf, nomfact="stg_fin_etude_raison_refus", useNA = "no")
+res <- verbatim(dataf=repdf, nomfact="stg_fin_etude_raison_refus", useNA = "no")
 setresult('stg_fin_etude_raison_refus')
 
 
@@ -149,25 +153,25 @@ setresult('stg_fin_etude_raison_refus')
 #'-----------------------
 #'
 
-res <- cat1(dataf=maindf, nomfact="alternance_cursus", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="alternance_cursus", useNA = "no", orderfreq = FALSE)
 setresult('alternance_cursus')
 
-res <- cat1(dataf=maindf, nomfact="alternance_type", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="alternance_type", useNA = "no", orderfreq = FALSE)
 setresult('alternance_type')
 
-res <- cat1(dataf=maindf, nomfact="alternance_proposition", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="alternance_proposition", useNA = "no", orderfreq = FALSE)
 setresult('alternance_proposition')
 
-res <- cat1(dataf=maindf, nomfact="alternance_poursuivre", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="alternance_poursuivre", useNA = "no", orderfreq = FALSE)
 setresult('alternance_poursuivre')
 
-res <- cat1(dataf=maindf, nomfact="alternance_pas_proposition", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="alternance_pas_proposition", useNA = "no", orderfreq = FALSE)
 setresult('alternance_pas_proposition')
 
-res <- cat1(dataf=maindf, nomfact="alternance_accepter", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="alternance_accepter", useNA = "no", orderfreq = FALSE)
 setresult('alternance_accepter')
 
-res <- cat1(dataf=maindf, nomfact="alternance_refus", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=repdf, nomfact="alternance_refus", useNA = "no", orderfreq = TRUE)
 setresult('alternance_refus')
 
 
@@ -175,44 +179,61 @@ setresult('alternance_refus')
 #' Situation actuelle
 #' ------------------
 
-res <- cat1(dataf=maindf, nomfact="situation_situation", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="situation_situation", useNA = "no", orderfreq = FALSE)
 setresult('situation_situation')
 
 
 #' Situation sur le marché de l'emploi
 #' ------------------------------------
 
-res <- cat1(dataf=maindf, nomfact="situation_emploi", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="situation_emploi", useNA = "no", orderfreq = FALSE)
 setresult('situation_emploi')
+
+
+#' ### taux d'emploi et filières (situation_emploi)
+
+res <- cat2(emploidf, "filiere","situation_emploi",
+            orderfreq1 =TRUE, ordervar1 = "situation_emploi" , orderval1 = "En activité professionnelle",
+            orderfun1 = mean)
+setresult('filieres_x_situation_emploi')
+
+
+#' ### situation et filière (situation_situation)
+
+res <- cat2(repdf, "filiere","situation_situation_short",
+            orderfreq1 = TRUE, ordervar1 = "situation_situation_short" ,
+            orderval1 = "activité pro.", orderfun1 = mean)
+setresult('filieres_x_situation_situation')
+
 
 
 ### Si Volontariat
 
-res <- cat1(dataf=maindf, nomfact="situation_volontariat", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="situation_volontariat", useNA = "no", orderfreq = FALSE)
 setresult('situation_volontariat')
 
-res <- cat1(dataf=maindf, nomfact="situation_volontariat_type", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=repdf, nomfact="situation_volontariat_type", useNA = "no", orderfreq = TRUE)
 setresult('situation_volontariat_type')
 
 
 ### Si Création d'entreprise
 
-res <- cat1(dataf=maindf, nomfact="situation_creation_activite", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="situation_creation_activite", useNA = "no", orderfreq = FALSE)
 setresult('situation_creation_activite')
 
 
 ### Si recherche d'emploi
 
-res <- cat1(dataf=maindf, nomfact="situation_recheche_depuis_ecole", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=rechdf, nomfact="situation_recheche_depuis_ecole", useNA = "no", orderfreq = FALSE)
 setresult('situation_recheche_depuis_ecole')
 
-res <- cat1(dataf=maindf, nomfact="situation_temps_recherce", useNA = "no", orderfreq = FALSE, )
+res <- cat1(dataf=rechdf, nomfact="situation_temps_recherce", useNA = "no", orderfreq = FALSE)
 setresult('situation_temps_recherce')
 
-res <- cat1(dataf=maindf, nomfact="situation_refus_proposition", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=rechdf, nomfact="situation_refus_proposition", useNA = "no", orderfreq = FALSE)
 setresult('situation_refus_proposition')
 
-res <- num1d(dataf=maindf, nomvar="situation_nombre_refus", useNA = "no")
+res <- num1d(dataf=rechdf, nomvar="situation_nombre_refus", useNA = "no")
 setresult('situation_nombre_refus')
 
 #-------------------------------------------------------------------------------------------
@@ -252,7 +273,7 @@ setresult('situation_nombre_refus')
 
 # 28 traitement de la question à réponses multiples ordonnées
 
-# variables <- colnames(maindf)[grep("situation_difficultes_", colnames(maindf))]
+# variables <- colnames(rechdf)[grep("situation_difficultes_", colnames(maindf))]
 
 raisons <- c("Difficultés à trouver des offres d'emploi correspondant au projet professionnel",
              "Mobilité géographique difficile",
@@ -277,7 +298,7 @@ raisons_short <- c("offres d'emploi // projet pro",
 
 
 
-res <- mocat1(dataf = maindf,
+res <- mocat1(dataf = rechdf,
               prefix = "situation_difficultes_",
               valvect = raisons,
               valshort = raisons_short,
@@ -296,19 +317,19 @@ setresult('X_autre_details')
 
 ### Si En poursuite d'études
 
-res <- cat1(dataf=maindf, nomfact="situation_type_etudes_short", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=repdf, nomfact="situation_type_etudes_short", useNA = "no", orderfreq = TRUE)
 setresult('situation_type_etudes_short')
 
-res <- verbatim2(dataf=maindf, nomfact="situation_etudes_etablissement", bynomfact = "filiere")
+res <- verbatim2(dataf=repdf, nomfact="situation_etudes_etablissement", bynomfact = "filiere")
 setresult('situation_etudes_etablissement')
 
-res <- verbatim2(dataf=maindf,"situation_etudes_intitule", bynomfact = "situation_etudes_etablissement")
+res <- verbatim2(dataf=repdf,"situation_etudes_intitule", bynomfact = "situation_etudes_etablissement")
 setresult('situation_etudes_intitule')
 
-res <- cat1(dataf=maindf, nomfact="situation_etudes_alternance", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=repdf, nomfact="situation_etudes_alternance", useNA = "no", orderfreq = FALSE)
 setresult('situation_etudes_alternance')
 
-res <- cat1(dataf=maindf, nomfact="situation_etudes_raison_short", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=repdf, nomfact="situation_etudes_raison_short", useNA = "no", orderfreq = TRUE)
 setresult('situation_etudes_raison_short')
 
 
@@ -385,57 +406,49 @@ res <- cat1(dataf=maindf, nomfact="entreprise_taille", useNA = "no", orderfreq =
 setresult('entreprise_taille')
 
 
-### L'emploi
+### L'emploi des diplômé en poste
 
-#### pays et zones géographiques
-
-res <- cat1(dataf=maindf, nomfact="france_etranger", useNA = "no", orderfreq = TRUE)
-setresult('france_etranger')
-
-res <- cat1(dataf=maindf, nomfact="votre_emploi_zonegeo", useNA = "no", orderfreq = TRUE)
-setresult('votre_emploi_zonegeo')
-
-res <- cat1(dataf=maindf, nomfact="votre_emploi_pays", useNA = "no", orderfreq = TRUE)
-setresult('votre_emploi_pays')
+#(localisation géographique **des diplômés en poste** : voir plus loin: international)
 
 
 #### fonction
 
 # questions ouvertes -----------------------------------------------------------
-res <- verbatim(dataf=maindf, nomfact="votre_emploi_fonction")
+res <- verbatim(dataf=actidf, nomfact="votre_emploi_fonction")
 # setresult('votre_emploi_fonction')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_activite", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_activite", useNA = "no", orderfreq = TRUE)
 setresult('votre_emploi_activite')
 
 # recodage questions ouvertes --------------------------------------------------
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_activite_standard_1", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_activite_standard_1",
+            useNA = "no", orderfreq = TRUE, minperc = 2)
 setresult('votre_emploi_activite_standard_1')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_activite_standard_2", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_activite_standard_2", useNA = "no", orderfreq = TRUE, minperc = 2)
 setresult('votre_emploi_activite_standard_2')
 
 
 
 ##### le contrat
-res <- cat1(dataf=maindf, nomfact="votre_emploi_type_contrat", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_type_contrat", useNA = "no", orderfreq = TRUE)
 setresult('votre_emploi_type_contrat')
 
 # non traitable
 # res <- cat1(dataf=maindf, nomfact="xxxx", useNA = "no", orderfreq = FALSE)
 # # setresult('votre_emploi_debut')
 
-res <- num1d(dataf=maindf, nomvar = "votre_emploi_duree_cdd")
+res <- num1d(dataf=actidf, nomvar = "votre_emploi_duree_cdd")
 setresult('votre_emploi_duree_cdd')
 
 
 #### Temps partiel?
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_temps_partiel", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_temps_partiel", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_temps_partiel')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_temps_partiel_subi", dotest = FALSE, orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_temps_partiel_subi", dotest = FALSE, orderfreq = FALSE)
 setresult('votre_emploi_temps_partiel_subi')
 
 # Non traitable (2 réponses)
@@ -448,21 +461,36 @@ setresult('votre_emploi_temps_partiel_subi')
 res <- cat1(dataf=maindf, nomfact="votre_emploi_statut_cadre", useNA = "no", orderfreq = TRUE)
 setresult('votre_emploi_statut_cadre')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_personnes_responsable", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_personnes_responsable", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_personnes_responsable')
 
 # n'existe pas seul
 # res <- cat1(dataf=maindf, nomfact="votre_emploi_responsabilite", useNA = "no", orderfreq = FALSE)
 # setresult('votre_emploi_responsabilite')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_responsabilite_budget", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_responsabilite_budget", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_responsabilite_budget')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_responsabilite_projet", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_responsabilite_projet", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_responsabilite_projet')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_responsabilite_equipe", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_responsabilite_equipe", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_responsabilite_equipe')
+
+
+
+#### La situation géographique
+
+res <- cat1(dataf=actidf,
+            nomfact="france_etranger", useNA = "no", orderfreq = TRUE)
+setresult('france_etranger')
+
+res <- cat1(dataf=actidf, nomfact="votre_emploi_zonegeo", useNA = "no", orderfreq = TRUE, minperc = 1)
+setresult('votre_emploi_zonegeo')
+
+res <- cat1(dataf=actidf, nomfact="votre_emploi_pays", useNA = "no", orderfreq = TRUE, minperc = 1)
+setresult('votre_emploi_pays')
+
 
 
 #### Les langues et l'international
@@ -471,31 +499,31 @@ setresult('votre_emploi_responsabilite_equipe')
 # res <- cat1(dataf=maindf, nomfact="xxxx", useNA = "no", orderfreq = FALSE)
 # # setresult('votre_emploi_langues')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_langues_francais", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_langues_francais", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_langues_francais')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_langues_anglais", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_langues_anglais", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_langues_anglais')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_langues_allemand", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_langues_allemand", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_langues_allemand')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_langues_espagnol", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_langues_espagnol", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_langues_espagnol')
 
-res <- verbatim2(dataf=maindf, nomfact="votre_emploi_langues_autres", bynomfact ="filiere")
+res <- verbatim2(dataf=actidf, nomfact="votre_emploi_langues_autres", bynomfact ="filiere")
 setresult('votre_emploi_langues_autres')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_fonction_international", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_fonction_international", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_fonction_international')
 
 
 #### autres caractéristiques de l'emploi
 
-res <- num1d(dataf=maindf, nomvar = "votre_emploi_developpement_durable", useNA = "no")
+res <- num1d(dataf=actidf, nomvar = "votre_emploi_developpement_durable", useNA = "no")
 setresult('votre_emploi_developpement_durable')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_consultant", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_consultant", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_consultant')
 
 
@@ -517,11 +545,11 @@ setresult('votre_emploi_consultant')
 
 
 
-res <- num1c(dataf=repdf, nomvar = "votre_emploi_remuneration_total",
+res <- num1c(dataf=actidf, nomvar = "votre_emploi_remuneration_total",
              breaks=seq(14000,100000, by = 4000), closed="left")
 setresult('votre_emploi_remuneration_total')
 
-res <- num1c(dataf=repdf, nomvar="votre_emploi_remuneration_part_variable",
+res <- num1c(dataf=actidf, nomvar="votre_emploi_remuneration_part_variable",
              breaks=seq(0,40, by=5), closed="left")
 setresult('votre_emploi_remuneration_part_variable')
 
@@ -535,13 +563,13 @@ setresult('votre_emploi_remuneration_part_variable')
 #'
 
 
-res <- num1d(dataf=maindf, nomvar = "votre_emploi_temps_recherche", useNA = "no")
+res <- num1d(dataf=actidf, nomvar = "votre_emploi_temps_recherche", useNA = "no")
 setresult('votre_emploi_temps_recherche')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_comment_trouver", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_comment_trouver", useNA = "no", orderfreq = TRUE)
 setresult('votre_emploi_comment_trouver')
 
-res <- verbatim(dataf=maindf, nomfact="votre_emploi_site_recherche")
+res <- verbatim(dataf=actidf, nomfact="votre_emploi_site_recherche")
 setresult('votre_emploi_site_recherche')
 
 
@@ -552,35 +580,35 @@ setresult('votre_emploi_site_recherche')
 #'
 
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_principal_critere", useNA = "no", orderfreq = TRUE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_principal_critere", useNA = "no", orderfreq = TRUE)
 setresult('votre_emploi_principal_critere')
 
 # NEPS
 # res <- cat1(dataf=maindf, nomfact="xxxx", useNA = "no", orderfreq = FALSE)
 # # setresult('votre_emploi_correspond')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_correspond_qualification", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_correspond_qualification", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_correspond_qualification')
 
-res <- cat1(dataf=maindf, nomfact="votre_emploi_correspond_secteur", useNA = "no", orderfreq = FALSE)
+res <- cat1(dataf=actidf, nomfact="votre_emploi_correspond_secteur", useNA = "no", orderfreq = FALSE)
 setresult('votre_emploi_correspond_secteur')
 
-res <- num1d(dataf=maindf, nomvar="votre_emploi_satisfaction", useNA = "no")
+res <- num1d(dataf=actidf, nomvar="votre_emploi_satisfaction", useNA = "no")
 setresult('votre_emploi_satisfaction')
 
-# res <- num1d(dataf=maindf, nomvar="votre_emploi_note", useNA = "no")
+# res <- num1d(dataf=actidf, nomvar="votre_emploi_note", useNA = "no")
 # setresult('votre_emploi_note')
 
-res <- num1d(dataf=maindf, nomvar="votre_emploi_note_conditions_travail", useNA = "no")
+res <- num1d(dataf=actidf, nomvar="votre_emploi_note_conditions_travail", useNA = "no")
 setresult('votre_emploi_note_conditions_travail')
 
-res <- num1d(dataf=maindf, nomvar="votre_emploi_note_relations_collegues", useNA = "no")
+res <- num1d(dataf=actidf, nomvar="votre_emploi_note_relations_collegues", useNA = "no")
 setresult('votre_emploi_note_relations_collegues')
 
 res <- num1d(dataf=maindf, nomvar="votre_emploi_note_relations_hierarchie", useNA = "no")
 setresult('votre_emploi_note_relations_hierarchie')
 
-res <- num1d(dataf=maindf, nomvar="votre_emploi_note_remuneration", useNA = "no")
+res <- num1d(dataf=actidf, nomvar="votre_emploi_note_remuneration", useNA = "no")
 setresult('votre_emploi_note_remuneration')
 
 # setresult('pour_finir_complements_information')
@@ -593,13 +621,13 @@ setresult('votre_emploi_note_remuneration')
 #' ==============================================================
 #'
 
-res <- verbatim2(dataf=maindf, nomfact="pour_finir_enseignement", bynomfact="filiere")
+res <- verbatim2(dataf=actidf, nomfact="pour_finir_enseignement", bynomfact="filiere")
 setresult('pour_finir_enseignement')
 
-res <- verbatim2(dataf=maindf, nomfact="pour_finir_enseignement_recus", bynomfact="filiere")
+res <- verbatim2(dataf=actidf, nomfact="pour_finir_enseignement_recus", bynomfact="filiere")
 setresult('pour_finir_enseignement_recus')
 
-res <- verbatim2(dataf=maindf, nomfact="pour_finir_enseignements_absents", bynomfact="filiere")
+res <- verbatim2(dataf=actidf, nomfact="pour_finir_enseignements_absents", bynomfact="filiere")
 setresult('pour_finir_enseignements_absents')
 
 

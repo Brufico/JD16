@@ -1,0 +1,2180 @@
+---
+title: "Depouillement de l'enquête Jeunes diplômés Ipag 2015"
+author: "Bruno Fischer Colonimos"
+date: "04 juillet 2016"
+output:
+  word_document:
+    fig_caption: yes
+    fig_width: 7
+    toc: yes
+  html_document:
+    css: customex2.css
+    number_sections: yes
+    theme: readable
+    toc: yes
+subtitle: Dépouillement question par question, depouillementV2.Rmd
+---
+
+
+```{r init, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = FALSE, warning=FALSE)
+# opts_chunk$set(echo = FALSE, fig.width = 5, fig.height = 5)
+options(digits = 2, scipen = 7)
+# width + heights figures constants
+dkfigwidth <- 5
+dkfigheight <- 5
+lkfigwidth <- 8
+lkfigheight <- 7
+```
+
+
+```{r, warning=FALSE, include=FALSE}
+#' Loading packages and code
+#' ================
+
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+
+#' Sourcing more code
+#' ================
+#'
+# more code
+# workdir <- getwd()
+maindir <- ".."
+mcodir <- "addcode"
+code1name <- "utils.R"
+source(file.path(maindir, mcodir, code1name))
+
+# more code :  standard functions
+stdfundir <- "standardfunctions"
+stdfunname <- "standardfunctionsV4.R"
+source(file.path(maindir, stdfundir, stdfunname))
+
+
+# more code: results storing and retrieving 
+# ~~==> attention: efface (réinitialise) la liste des résultats de traitement~~
+
+rdirect <- "rcode"
+codresultats <- "funcoderesultats.R"
+codepath <- file.path(maindir, rdirect, codresultats)
+source(file.path(maindir, rdirect, codresultats))
+
+```
+
+
+```{r getdata}
+#'
+#' Récupération des données prétraitées
+#' ====================================
+#'
+
+# path(rda)
+datadir2 <- "data2"
+alldatapath <- file.path(maindir, datadir2, "alldata.Rda")
+# loading
+whatload <- load(alldatapath)
+# verification
+# whatload
+```
+
+
+```{r getallresults}
+#'
+#' lecture des résultats de traitement
+#' ====================================
+#'
+
+# path(rda)
+datadir3 <- "data3"
+allresultspath <- file.path(maindir, datadir3, "allresults.Rda")
+#message(getwd())
+#message(allresultspath)
+# loading
+whatload <- load(allresultspath)
+# verification
+#whatload
+```
+
+
+
+Les données
+===========
+
+```{r studydata}
+# nombre de diplômés 
+ndip <- nrow(maindf)
+nfiliere =length(levels(maindf$filiere)) 
+nrep <- nrow(repdf)
+trep <- nrep / ndip
+
+```
+
+L'enquête Jeunes Diplômés 2015 a été administrée aux diplômés de la promotion 2015 en mai et juin 2016, par voie électronique, suivie d'une relance téléphonique.
+
+Les diplômés de la promotion étaient donc sur le marché du travail depuis environ 7 mois (le jury de diplôme ayant eu lieu en octobre)
+
+Les diplômés de la promotion 2015 sont au nombre de `r ndip`, répartis en `r nfiliere` filières de spécialisation et cursus de double diplôme.
+Le nombre de répondants à l'enquête est de `r nrep`, soit un taux de réponse de `r trep*100` %.
+
+```{r filierescomp, fig.height=lkfigheight, fig.widtht = lkfigwidth}
+# lkfigwidth
+# lkfigheight
+fpromo <- cat1(dataf=maindf, nomfact="filiere", useNA = "no",
+                                    orderfreq = TRUE,
+                                    rfreq = FALSE, digits = 2, cfill = "steelblue")
+
+
+maindf[["filiere"]] <- orderfact(maindf, nomfact="filiere", nlevels = fpromo$levels)
+repdf[["filiere"]] <- orderfact(repdf, nomfact="filiere", nlevels = fpromo$levels)
+
+t1 <- table(maindf$filiere)
+tdf <- as.data.frame(t1)
+t2 <- table(repdf$filiere)
+t2df <- as.data.frame(t2)
+
+tcomp <- full_join(tdf, t2df, "Var1")
+colnames(tcomp) <- c("filière", "Nombre de diplômés", "Nombre de répondants")
+
+# table :
+kable(tcomp, caption="Diplômés et répondants par spécialisation")
+
+# Graphique : faire un facteur et ordonner en sens inverse les niveaux
+maindf$rep <- ifelse(maindf$repondant, "Répondant", "Nonrépondant")
+maindf$rep <- orderfact(maindf,"rep", nlevels = c("Répondant", "Nonrépondant"))
+# plot
+ggplot(maindf[which(!is.na(maindf[["filiere"]])), ], 
+       aes(filiere, fill = rep)) + geom_bar(position="stack")+
+        theme(axis.text.x = element_text(angle=90, hjust=1)) +
+        scale_fill_discrete(guide = guide_legend(title = "",reverse = TRUE))+
+        labs(x="", y= "Effectif", title= "Répondants par spécialisation" )
+
+# test
+set.seed(1000)
+pval <- chisq.test(x= tcomp[["Nombre de répondants"]], p=tcomp[["Nombre de diplômés"]], rescale.p = TRUE, simulate.p.value = TRUE)$p.value
+
+```
+
+La distribution des filières des répondants ne diffère pas significativement de celle des diplômés (p-valeur = `r 100* pval` %, obtenue par simulation)
+On peut donc considérer que l'échantillon des répondants représente bien l'ensemble des spécialisations.
+
+
+* Remarque: dans ce qui suit, un diplômés est considéré comme un répondant s'il a répondu à au moins une question, compte non tenu des questions sur son état-civil. Il faut remarquer que le nombre de réponses cournies par un répondant  est extrêmement variable, comme le montrent les éléments suivants:
+
+```{r reponses}
+
+```{r}
+res <- getresult("nrep")
+
+# numc <- res$numcases
+# ptable <- res$ptable
+# colnames(ptable) <- c("Réponse", "Effectif", "%")
+# pval <- res$chi2$test1$p.value
+# seuilsignif <- 0.05
+# seuilpeusignif <- 0.1
+# estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+rownames(sumtable) <- c("Réponses")
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+
+
+# kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+```
+
+
+```{r}
+plot2 <- plot + labs(x = "nombre de réponses fournies", y = "Poucent")
+plot2
+
+```
+
+Cette distribution est partiellement expliquée par la structure du questionnaire (le nombre de questions proposées étant variable selon le statut des diplômés), mais on rencontrera au cours du dépouillement des nombres de réponses extrêmement variables d'une question à l'autre, au sein de groupes de questions destinées à la même catégorie de diplômés
+
+
+
+
+L’accès à l’emploi par le contexte de la fin d'études  : Stage et Alternance
+=============================================================================
+
+
+L'accès à l'emploi par le stage de fin d'études 
+-----------------------------------------------
+
+### 10 Avez-vous reçu une proposition d’embauche de votre entreprise d'accueil à l’issue de votre stage de fin d'études ?{-}
+
+```{r stg_fin_etude_proposition}
+res <- getresult("stg_fin_etude_proposition")
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%)
+
+```{r}
+plot2 <- plot + labs(title = "Proposition d'embauche en fin de stage ?")
+plot2
+
+```
+
+### 11 Avez-vous accepté cette proposition ? {-}
+[Répondez seulement à cette question si vous avez répondu 'Oui' à la question 'stg_fin_etude_proposition']
+
+```{r stg_fin_etude_accepte}
+res <- getresult("stg_fin_etude_accepte")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+Table des réponses:  
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+La différence des fréquences est peu significative (Chi² : p-valeur = `r pval*100`%)
+
+```{r}
+plot2 <- plot + 
+        labs(title = "Avez-vous accepté ?")
+plot2
+
+```
+
+### 12 (Si vous avez refusé) Pour quelle(s) raison(s) avez-vous refusé cette proposition ? 
+[Répondez seulement à cette question si vous avez répondu 'Non' à la question 'stg_fin_etude_accepte']
+
+```{r}
+res <- getresult("stg_fin_etude_raison_refus")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Raisons du refus")
+```
+
+
+
+L'accès à l'emploi par l'Alternance
+-----------------------------------
+
+### 13 Avez-vous suivi un cursus en alternance à l’IPAG ? {-}
+
+
+```{r alternance_cursus}
+res <- getresult("alternance_cursus")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot
+
+```
+
+### 14 Dans le cadre de cette alternance, quel type de contrat avez-vous signé ? {-} 
+
+```{r}
+res <- getresult("alternance_type")
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot
+
+```
+
+
+### 15 Avez-vous reçu une proposition d'embauche de la part de l'entreprise, à la fin de votre contrat en alternance ? {-}
+
+
+```{r}
+res <- getresult("alternance_proposition")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot
+
+```
+
+### 16 Est-ce pour poursuivre la mission sur laquelle vous avez travaillé pendant votre alternance ? {-}
+
+
+```{r}
+res <- getresult("alternance_proposition")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot
+
+```
+
+
+### 17 Si vous n'avez pas eu de proposition d'embauche, savez-vous pour quelle(s) raison(s) ? {-}
+
+
+```{r,fig.width=lkfigwidth}
+res <- getresult("alternance_pas_proposition")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r fig.height=lkfigheight}
+plot
+```
+
+
+### 18 Si vous avez eu une proposition d'embauche, Avez-vous accepté cette proposition ? {-}
+
+```{r}
+res <- getresult("alternance_accepter")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot
+
+```
+
+### 19 Si vous avez refusé cette proposition, Pour quelle raison  ? {-}
+
+
+```{r}
+res <- getresult("alternance_refus")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des fréquences est significative (Chi² : p-valeur = `r pval*100`%) -->
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 + theme(axis.text.x = element_text(angle=33, hjust=1))
+
+```
+
+
+
+La situation actuelle des diplômés
+==================================
+
+
+### 20 Votre situation actuelle {-}
+
+```{r}
+res <- getresult("situation_situation")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+<!-- -->
+
+
+La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) 
+
+```{r}
+plot
+```
+
+
+La situation des diplômés sur le marché de l'emploi
+===================================================
+
+Certains diplômés sont à la recherche d'un emploi, et sont donc sur le marché de l'emploi, de même que les diplômés qui créent effectivement une activité, et ceux qui occupent un poste. Les diplômés qui sont dans d'autres situations ne sont pas sur le marché de l'emploi. En se focalisant sur les diplômés sur le marché de l'emploi, on obtient les résultats suivants:
+
+
+```{r}
+res <- getresult("situation_emploi")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+<!-- -->
+
+
+
+```{r}
+plot
+
+```
+
+
+
+
+Le volontariat
+==============
+
+### 21 Si vous êtes en activité professionnelle, êtes_vous volontaire (VIE, VIA) ? {-}
+
+```{r}
+res <- getresult("situation_volontariat")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+<!-- -->
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+### 22 Si vous êtes volontaire, De quel type de volontariat s'agit-il ? {-}
+
+
+```{r}
+res <- getresult("situation_volontariat_type")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+<!-- -->
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+
+```
+
+
+Les créateurs d'entreprise
+==========================
+
+### 23 Si vous êtes en création d'entreprise, L'entreprise st-elle déjà en activité ? {-}
+
+* Si l'entreprise en création est déjà en activité, vous serez considéré(e) comme étant vous-même en activité professionnelle.
+
+```{r}
+res <- getresult("situation_creation_activite")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+
+```
+
+Les diplômés en recherche d'emploi
+==================================
+
+### 24 Etes-vous à la recherche d'un emploi depuis la sortie de l'école ? {-}
+
+```{r}
+res <- getresult("situation_recheche_depuis_ecole")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+### 25 Depuis combien de temps êtes-vous à la recherche d'un emploi ? {-}
+
+
+```{r, fig.height=lkfigheight}
+res <- getresult("situation_temps_recherce")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot1
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+### 26 Avez-vous refusé une ou plusieurs propositions d'emploi depuis ? {-}
+
+
+```{r}
+res <- getresult("situation_refus_proposition")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+### 27 Combien de propositions d'emploi avez-vous refusé ? {-}
+
+
+```{r}
+res <- getresult("situation_nombre_refus")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot + labs(x="", y = "%")
+
+```
+
+
+
+### 28 Quelles difficultés rencontrez-vous dans votre recherche d'emploi ? {-}
+
+traitement spécial
+
+### 29 Précisez {-}
+
+
+
+
+Les diplômés en poursuite d’études
+==================================
+
+### 32 Quel type d'études poursuivez-vous ? {-}
+
+
+```{r}
+res <- getresult("situation_type_etudes_short")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+### 33 Dans quel établissement (nom et ville) êtes-vous inscrit(e) ? {-}
+
+```{r}
+res <- getresult("situation_etudes_etablissement")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Réponses")
+```
+
+
+### 34 Intitulé exact de la formation {-}
+
+```{r}
+res <- getresult("situation_etudes_intitule")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Réponses")
+```
+
+### 35 Poursuivez-vous vos études en alternance ? {-}
+
+```{r}
+res <- getresult("situation_etudes_alternance")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+### 36 Pour quelle raison avez-vous principalement choisi de poursuivre des études ? {-}
+
+```{r}
+res <- getresult("situation_etudes_raison_short")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+Les diplômés en activité professionnelle
+========================================
+
+
+Caractéristiques générales de l’emploi
+--------------------------------------
+
+### 37 Il s'agit d'un: {-}
+-1er emploi
+-2ème emploi ou plus depuis la sortie de l'école
+
+
+```{r}
+res <- getresult("emploi_actuel_premier_second")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+
+
+### 38 Sur cet emploi, vous êtes: {-}
+
+
+```{r}
+res <- getresult("emploi_actuel_type")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+res <- getresult("emploi_actuel_type_short")
+res$plot
+
+```
+
+
+
+
+REM: aucune réponse n'est enregistrées pour le questions suivantes
+39 Avez-vous un statut de
+40 Vous êtes chef d'entreprise, en êtes-vous
+41 Combien de temps avez-vous mis pour trouver cet emploi ou créer votre entreprise à la sortie de l'école ?
+42 Depuis combien de temps occupez-vous cet emploi ?
+
+
+L'entreprise
+------------
+
+REM: Questions 43 à 50 : pas de traitement statistique
+
+### 50 Secteur d'activité de votre entreprise {-}
+
+#### Premiers résultats: secteurs d'activité CGE
+
+
+```{r}
+res <- getresult("entreprise_secteur")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot1
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r,fig.height=lkfigheight}
+plot2 <- plot + labs(x = "", y = "Pourcent")
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+#### Avec les secteurs de _L'Etudiant_
+
+
+```{r}
+res <- getresult("entreprise_secteur_letudiant")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot1
+```
+
+<!-- Il y a `r numc` répondants à cette question -->
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r,fig.height=lkfigheight}
+plot2 <- plot + labs(x = "", y = "Pourcent")
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
+
+```
+
+
+
+### 51 Quel est le principal secteur d'activité dans lequel votre entreprise (bureau d'études, société de conseil) vous conduit à intervenir le plus souvent ? {-}
+
+
+```{r}
+res <- getresult("entreprise_secteur_principal")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+# plot2 <- plot + labs(x = "", y = "Poucent")
+# plot2
+
+```
+
+
+
+### 52 Quelle est la taille de l'entreprise (ou du groupe si l'entreprise appartient à un groupe) dans laquelle vous travaillez ? {-}
+
+
+```{r,fig.height=lkfigheight}
+res <- getresult("entreprise_taille")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot1
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Pourcent")
+plot2 + theme(axis.text.x = element_text(angle=45, hjust=1))
+
+```
+
+
+
+
+
+Fonction et contrat
+-------------------
+
+
+### 54 Quelle est votre activité principale ? {-}
+
+```{r}
+res <- getresult("votre_emploi_activite")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+# plot2 <- plot + labs(x = "", y = "Poucent")
+# plot2
+
+```
+
+
+
+### 53 Quelle est votre fonction précise ? {-}
+
+(REM: ordre des question 53-54 inversé)
+
+```{r}
+res <- getresult("votre_emploi_fonction")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Réponses")
+```
+
+
+### 55 Quel est votre contrat de travail ? {-}
+
+
+```{r}
+res <- getresult("votre_emploi_type_contrat")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+
+REM: 56 Quand a débuté votre contrat de travail ? Entrez une date :==> non traitable
+
+
+### 57 (si votre contrat est un CDD) Quelle est la durée de votre CDD (en nombre de mois)  ? {-}
+
+```{r}
+res <- getresult("votre_emploi_duree_cdd")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- res$plot + scale_x_continuous(limits = c(0, 25))
+plot2
+```
+
+
+### 58 Travaillez-vous à temps partiel ? {-}
+
+
+```{r}
+res <- getresult("votre_emploi_temps_partiel")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+### 59 (si vous êtes à temps partiel) Ce temps partiel est-il voulu ou subi ? {-}
+
+
+```{r}
+res <- getresult("votre_emploi_temps_partiel_subi")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+# plot2 <- plot + labs(x = "", y = "Poucent")
+# plot2
+
+```
+
+
+
+### 60 (si vous êtes à temps partiel) Quelle part de temps partiel réalisez-vous ? {-}
+
+Non traité (2 réponses)
+
+
+Statut et responsabilité
+------------------------
+
+### 61 Avez-vous le statut cadre ou assimilé ? {-}
+
+
+```{r}
+res <- getresult("votre_emploi_statut_cadre")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+### 62 Avez-vous des personnes sous votre responsabilité hiérarchique ? {-}
+
+```{r}
+res <- getresult("votre_emploi_personnes_responsable")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+### 63 Avez-vous la responsabilité d'un budget, d'un projet , d’une équipe ? {-}
+
+* Budget
+
+```{r}
+res <- getresult("votre_emploi_responsabilite_budget")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+* projet
+
+```{r}
+res <- getresult("votre_emploi_responsabilite_projet")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+* equipe
+
+```{r}
+res <- getresult("votre_emploi_responsabilite_equipe")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+Les langues et l'international
+------------------------------
+
+### 64 Utilisez-vous fréquemment les langues suivantes dans votre travail ? {-}
+- Français : 
+- Anglais : 
+- Allemand :
+- Espagnol :
+
+```{r}
+res <- getresult("votre_emploi_langues_francais")
+numcfr <- res$numcases
+ptablefr <- res$ptable
+colnames(ptablefr) <- c("Réponse", "Fra.Eff.", "Fra.%")
+
+res <- getresult("votre_emploi_langues_anglais")
+numcen <- res$numcases
+ptableen <- res$ptable
+colnames(ptableen) <- c("Réponse", "Eng.Eff.", "En.%")
+
+res <- getresult("votre_emploi_langues_allemand")
+numcal <- res$numcases
+ptableal <- res$ptable
+colnames(ptableal) <- c("Réponse", "All.Eff.", "All.%")
+
+res <- getresult("votre_emploi_langues_espagnol")
+numces <- res$numcases
+ptablees <- res$ptable
+colnames(ptablees) <- c("Réponse", "Esp.Eff.", "Esp.%")
+
+
+
+comptable <- full_join( ptablefr, 
+                        full_join( ptableen , 
+                                   full_join(ptableal, ptablees, by="Réponse" ), 
+                                   by="Réponse"),
+                        by="Réponse")
+rwn <- row.names(comptable)
+comptable  <-  select(comptable, matches(".Eff."), matches(".%"))
+row.names(comptable) <- rwn
+                   
+kable(comptable, caption="fréquence de l'utilisation des quatre langues enseignées à l'Ipag")
+```
+
+graphique:
+```{r languesgraph, fig.height= lkfigheight}
+lngdf <-  data.frame(repdf[c("nom","votre_emploi_langues_francais", "votre_emploi_langues_anglais",
+                             "votre_emploi_langues_allemand", "votre_emploi_langues_espagnol")])
+
+colnames(lngdf) <- c("nom","francais", "anglais", "allemand", "espagnol")
+mldf <- melt(lngdf, id="nom")
+mldf <- filter(mldf, !is.na(value))
+
+mldf$value <- orderfact(dataf = mldf, "value", nlevels = levels(repdf$votre_emploi_langues_francais))
+
+ggplot(mldf)+
+        geom_bar(aes(x = value, fill = variable)) +
+        facet_grid(variable ~ .) +
+        labs(x="") +
+        guides(fill = "none") +
+        theme(axis.text.x = element_text(angle=30, hjust=1))
+```
+
+
+
+
+### 65 Quelle(s) autre(s) langue(s) utilisez-vous ? Écrivez votre réponse ici : {-}
+
+```{r}
+res <- getresult("votre_emploi_langues_autres")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "autres langues")
+```
+
+### 66 Votre fonction est-elle liée à l'international ? {-}
+
+```{r}
+res <- getresult("votre_emploi_fonction_international")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot
+
+```
+
+
+Autres caractéristiques de l'activité
+-------------------------------------
+
+### 67 Sur une échelle allant de 0 à 5, votre mission intègre-t-elle une dimension "Développement durable" ? {-}
+
+```{r}
+res <- getresult("votre_emploi_developpement_durable")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+
+### 68 Avez-vous le statut de consultant ? {-}
+
+```{r}
+res <- getresult("votre_emploi_consultant")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+
+
+
+La rémunération
+-----------------------------------
+
+### Rémunération totale (brute) annuelle {-}
+(résultant des questions 69-71)
+(69 Quelle est votre rémunération brute annuelle, hors primes, avantages en nature et gratifications (en euros) ?
+70 Pouvez-vous estimer votre rémunération variable annuelle : primes, participation, intéressement, … (en Euros)
+REM : 71 Disposez-vous d'avantages en nature ? => aucune réponse)
+
+
+```{r}
+res <- getresult("votre_emploi_remuneration_total")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("classe", "valeur centrale","Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+exactmean <- mean(repdf$votre_emploi_remuneration_total, na.rm = TRUE)
+exactmedian <- median(repdf$votre_emploi_remuneration_total, na.rm = TRUE)
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+
+```
+
+La rémunération totale annuelle moyenne exacte est de `r exactmean`, ét la médiane est de `r exactmedian`
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "rémunération annuelle brute", y = "effectif")
+plot2
+
+```
+
+
+
+
+### Part variable de la rémunération {-}
+
+```{r}
+res <- getresult("votre_emploi_remuneration_part_variable")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("classe", "valeur centrale","Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "part variable (%) de la rémunération", y = "effectif")
+plot2
+
+```
+
+
+
+La recherche de l'emploi
+------------------------
+
+### 72 Combien de temps a duré votre recherche d'emploi (en mois) ? {-}
+
+```{r}
+res <- getresult("votre_emploi_temps_recherche")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+exactmean <- mean(repdf$votre_emploi_temps_recherche, na.rm = TRUE)
+exactmedian <- median(repdf$votre_emploi_temps_recherche, na.rm = TRUE)
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+La durée moyenne de la recherche d'emploi a été pour les diplômés en poste de `r exactmean` mois
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+
+### 73 Comment avez-vous trouvé cet emploi ? {-}
+
+
+```{r}
+res <- getresult("votre_emploi_comment_trouver")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+### 74 Pouvez-vous préciser le site spécialisé ? (si vous avez trouvé cet emploi de cette façon) {-}
+
+
+```{r}
+res <- getresult("votre_emploi_site_recherche")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Réponses")
+```
+
+
+
+
+L'appréciation du poste par les diplômés
+----------------------------------------
+
+### 75 Quel a été votre principal critère dans le choix de cet emploi ? {-}
+
+```{r}
+res <- getresult("votre_emploi_principal_critere")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+
+### 76 Estimez-vous que votre emploi correspond à votre niveau de qualification ? au secteur disciplinaire de votre formation ? {-}
+
+* correspond à votre niveau de qualification ?
+
+```{r}
+res <- getresult("votre_emploi_correspond_qualification")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+* au secteur disciplinaire de votre formation ?
+
+
+```{r}
+res <- getresult("votre_emploi_correspond_secteur")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+### 77 Globalement, sur une échelle allant de 1 à 5 (5 = très satisfait - 1 = peu satisfait), êtes-vous satisfait(e) de votre emploi actuel ? {-}
+
+
+```{r}
+res <- getresult("votre_emploi_satisfaction")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("Réponse", "Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "", y = "Poucent")
+plot2
+
+```
+
+### 78 Sur une échelle de 1 à 5 (1=peu satisfaisant - 5=très satisfaisant), comment jugeriez-vous les aspects suivants de votre emploi  {-}
+
+-vos conditions de travail 
+-vos relations avec vos collègues
+-vos relations de travail avec votre hiérarchie
+-votre niveau de rémunération
+
+
+```{r}
+res <- getresult("votre_emploi_note_conditions_travail")
+numcct <- res$numcases
+sumct <- res$summaries
+ptablect <- res$ptable
+
+res <- getresult("votre_emploi_note_relations_collegues")
+numcrc <- res$numcases
+sumrc <- res$summaries
+ptablerc <- res$ptable
+
+res <- getresult("votre_emploi_note_relations_hierarchie")
+numcrh <- res$numcases
+sumrh <- res$summaries
+ptablerh <- res$ptable
+
+
+res <- getresult("votre_emploi_note_remuneration")
+numcrm <- res$numcases
+sumrm <- res$summaries
+ptablerm <- res$ptable
+
+
+combsum <- rbind(sumct, sumrc, sumrh, sumrm)
+rownames(combsum) <- c("satisfaction conditions de travail",
+                       "satisfaction relations collègues",
+                       "satisfaction relations hiérarchie",
+                       "satisfaction rémunération")
+colnames(combsum)[6] <- "Médiane"
+
+# print(combsum)
+
+kable(combsum, caption="caractéristiques de la satisfaction")
+```
+
+Graphique:
+```{r satisgraph, fig.height= 6}
+lngdf <-  data.frame(repdf[c("nom","votre_emploi_note_conditions_travail", "votre_emploi_note_relations_collegues",
+                             "votre_emploi_note_relations_hierarchie", "votre_emploi_note_remuneration")])
+
+colnames(lngdf) <- c("nom","conditions de travail", "relations collegues", 
+                     "relations hierarchie", "rémunération")
+mldf <- melt(lngdf, id="nom")
+mldf <- filter(mldf, !is.na(value))
+
+#mldf$value <- orderfact(dataf = mldf, "value", nlevels = levels(repdf$votre_emploi_langues_francais))
+
+
+# or
+ggplot(mldf, aes(variable, value)) + 
+        geom_violin()+
+        geom_jitter(width = .7, height = .3, color="blue", alpha=.5) +
+        labs(y= "satisfaction")
+```
+Les diplômés sont quasi-unanimement satisfaits ou très satisfaits de leurs conditions de travail et des relations avec leur entourage professionnel. Ils sont  partagés en ce qui conconcerne leur rémunération.
+
+
+
+
+
+L'opinion des diplômés sur certains éléments de leur formation
+==============================================================
+
+
+### 81 Quels sont les enseignements qui vous semblent les plus utiles pour l'exercice de votre métier et votre insertion professionnelle ? {-}
+
+
+```{r}
+res <- getresult("pour_finir_enseignement")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Réponses")
+```
+
+### 82 Parmi les enseignements reçus, quels sont ceux qui mériteraient d'être approfondis ou renforcés ? {-}
+
+
+```{r}
+res <- getresult("pour_finir_enseignement_recus")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Réponses")
+```
+
+### 83 Quels sont les enseignements, absents de votre formation, qui vous auraient été utiles ? {-}
+
+
+```{r}
+res <- getresult("pour_finir_enseignements_absents")
+numc <- res$numcases
+ptable <- res$ptable
+
+```
+Il y a `r numc` répondants
+
+```{r}
+kable(ptable, caption = "Réponses")
+```
+
+

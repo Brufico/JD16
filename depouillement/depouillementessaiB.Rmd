@@ -247,10 +247,12 @@ plot2
 
 
 
-Dimension internationale
-----------------------------
+Localisation géographique du poste
+----------------------------------
 
-### France-Etranger
+Les données de localisation n'ont pas été obtenues directement à partir du questionnaire d'enquête. Elles ont été collectées à partir des comptes LinkedIn des diplômé, puis croisées avec les réponses au questionnaire. Seules les localisations correspondant à des diplômés en activité professionnelles sont pertinentes ici.
+
+### France vs Etranger {-}
 
 
 ```{r}
@@ -270,7 +272,8 @@ plot <- res$plot
 Il y a `r numc` répondants à cette question
 
 ```{r}
-kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+kable(ptable , 
+      caption = "Table des réponses", align = 'c', digits = 2)
 ```
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
@@ -283,10 +286,7 @@ plot2
 
 
 
-
-
-### Zones géographiques
-
+### Zones géographiques {-}
 
 ```{r}
 res <- getresult("votre_emploi_zonegeo")
@@ -305,7 +305,7 @@ plot <- res$plot
 Il y a `r numc` répondants à cette question
 
 ```{r}
-kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+kable(ptable[ptable[[2]] > 0, ], caption = "Table des réponses", align = 'c', digits = 2)
 ```
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
@@ -318,7 +318,7 @@ plot2
 
 
 
-### Pays
+### Pays {-}
 
 
 ```{r}
@@ -338,7 +338,7 @@ plot <- res$plot
 Il y a `r numc` répondants à cette question
 
 ```{r}
-kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+kable(ptable[ptable[[2]] > 0, ], caption = "Table des réponses", align = 'c', digits = 2)
 ```
 
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
@@ -348,3 +348,4 @@ plot2 <- plot
 plot2
 
 ```
+

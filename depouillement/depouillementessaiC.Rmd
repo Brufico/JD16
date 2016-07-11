@@ -1,0 +1,204 @@
+---
+title: "Dépouillement de l'enquête Jeunes diplômés Ipag 2015"
+author: "Bruno Fischer"
+date: "27 juin 2016"
+output:
+  word_document:
+    fig_caption: yes
+    fig_width: 9
+    toc: no
+  html_document:
+    css: customex2.css
+    number_sections: yes
+    theme: readable
+subtitle: Dépouillement,  essais
+---
+
+
+```{r init, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = FALSE, warning = FALSE)
+# opts_chunk$set(echo = FALSE, fig.width = 5, fig.height = 5)
+options(digits = 2, scipen = 7)
+# width + heights figures constants
+dkfigwidth <- 5
+dkfigheight <- 5
+lkfigwidth <- 8
+lkfigheight <- 7
+```
+
+
+```{r, warning=FALSE, include=FALSE}
+#' Loading packages and code
+#' ================
+
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+
+#' Sourcing more code
+#' ================
+#'
+# more code
+# workdir <- getwd()
+maindir <- ".."
+mcodir <- "addcode"
+code1name <- "utils.R"
+source(file.path(maindir, mcodir, code1name))
+
+# more code :  standard functions
+stdfundir <- "standardfunctions"
+stdfunname <- "standardfunctionsV5.R"
+source(file.path(maindir, stdfundir, stdfunname))
+
+
+# more code: results storing and retrieving 
+# ~~==> attention: efface (réinitialise) la liste des résultats de traitement~~
+
+rdirect <- "rcode"
+codresultats <- "funcoderesultats.R"
+codepath <- file.path(maindir, rdirect, codresultats)
+source(file.path(maindir, rdirect, codresultats))
+
+```
+
+
+```{r getdata}
+#'
+#' Récupération des données prétraitées
+#' ====================================
+#'
+
+# path(rda)
+datadir2 <- "data2"
+alldatapath <- file.path(maindir, datadir2, "alldata.Rda")
+# loading
+whatload <- load(alldatapath)
+# verification
+# whatload
+```
+
+
+```{r getallresults}
+#'
+#' lecture des résultats de traitement
+#' ====================================
+#'
+
+# path(rda)
+datadir3 <- "data3"
+allresultspath <- file.path(maindir, datadir3, "allresults.Rda")
+# message(getwd())
+# message(allresultspath)
+# loading
+whatload <- load(allresultspath)
+# verification
+# whatload
+```
+
+
+
+dépouillement
+========================
+
+Les spécialisations et le taux d'emploi
+---------------------------------------
+
+#### En considérant uniquement les diplômés sur le marché du travail
+
+```{r}
+res <- getresult("filieres_x_situation_emploi")
+
+numc <- res$numcases
+ptable <- select(res$table, filiere, num, perclabs)
+colnames(ptable) <- c("filiere", "Effectif", "%")
+
+lbl <- as.character(res$table$filiere)
+lbl[5] <- "Gestion des Hommes et RSE"
+lbl[6] <- "Global supply chain management – Eco. circ."
+
+plot <- res$plot +
+        theme(axis.text.x = element_text(angle = 67, hjust=1)) +
+        scale_x_discrete(limits = res$table$filiere, labels=lbl) +
+        scale_fill_discrete(NULL) +
+        geom_text(data = res$table , aes(x = filiere, y = .05, label = numlabs), angle = 90, hjust=0) +
+        geom_text(data = res$table , aes(x = filiere,
+                                        y = percval * 0.8, #percval - 0.03
+                                        label = perclabs)) +
+        theme(legend.position = c(0.85, 0.85)) +
+        labs(title = "Situation sur le marché de l' emploi",
+             x = "",
+             y = "pourcentage")
+
+        
+```
+
+Il y a `r numc` répondants
+
+```{r}
+
+kable(ptable, caption = "Table des taux d'emplois", align = 'c', digits = 2)
+```
+
+```{r, fig.width=lkfigwidth, fig.height= lkfigheight+2}
+plot
+
+```
+
+#### En considérant toutes les situations
+
+```{r}
+res <- getresult("filieres_x_situation_situation")
+
+numc <- res$numcases
+# ptable <- select(res$table, filiere, num, perclabs)
+
+ptable <- with(repdf, 
+     table(filiere , situation_situation_short, useNA="no")
+     )
+
+
+# colnames(ptable) <- c("filiere", "Effectif", "%")
+
+
+lbl <-  sapply(as.character(res$table$filiere),
+               function(x){
+                       if (x == "Gestion des Hommes et Responsabilité Sociale des Entreprises"){
+                               res <-  "Gestion des Hommes et RSE"
+                       } else if (x == "Global supply chain management – Economie circulaire") {
+                               res <- "Global supply chain management – Eco. circ."
+                       } else {
+                               res <- x
+                       }
+                       res
+               } )
+
+
+
+plot <- res$plot +
+        theme(axis.text.x = element_text(angle = 67, hjust=1)) +
+        scale_x_discrete(limits = res$table$filiere , labels=lbl) +
+        scale_fill_discrete(NULL) +
+        geom_text(data = res$table , aes(x = filiere, y = .05, label = numlabs), 
+                  angle = 90, hjust=0) +
+        geom_text(data = res$table , aes(x = filiere,
+                                         y = percval *.8,
+                                         label = ifelse(percval >= .3 , perclabs, ""))) +
+        theme(legend.position = "bottom") + #c(.90,.8)
+        labs(title = "Situation par filiere",
+             x = "",
+             y = "pourcentage")
+        
+```
+
+Il y a `r numc` répondants
+
+```{r}
+
+kable(ptable, caption = "Table", align = 'c', digits = 2)
+```
+
+```{r, fig.width=lkfigwidth, fig.height= lkfigheight+2}
+plot
+
+```

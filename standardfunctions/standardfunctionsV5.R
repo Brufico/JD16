@@ -410,7 +410,7 @@ orderfact <- function(dataf, nomfact, orderfreq = TRUE, orderdesc = TRUE,
                         resfact <- dataf[[nomfact]]
                 }
         } else {
-                resfact <- factor(dataf[,nomfact], levels = nlevels)
+                resfact <- factor(dataf[[nomfact]], levels = nlevels) ### modfié ????????????
         }
         # retour
         resfact
@@ -872,10 +872,10 @@ cat1 <- function(dataf, nomfact, useNA = "no",
                              cfill = cfill, percentlabel = sfdefault("percentlabel") )
 
         pie <- piechart(dataf, nomfact,
-                             scaletitle = sfdefault("scaletitle"),
-                             dolabel = sfdefault("dolabel"),
-                             minperc = sfdefault("minperc"),
-                             labpos = sfdefault("labpos") )
+                             scaletitle = scaletitle,
+                             dolabel = dolabel,
+                             minperc = minperc,
+                             labpos = labpos )
         # prepare plots for storage
         plot0 <- NULL
         plot1 <- NULL
@@ -1245,7 +1245,7 @@ cat2 <- function(dataf, nomfact1, nomfact2,  useNA = "no",
 
         make.result(
                 name = c(nomfact1, nomfact2),
-                num = num,
+                numcases = num,
                 levels =levels(dataf[[nomfact1]]),
                 levels2 =levels(dataf[[nomfact2]]),
                 table = tbl1,

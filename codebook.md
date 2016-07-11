@@ -154,6 +154,15 @@ SITUATION ACTUELLE
     - En poursuite d'études (hors thèse)
     - Sans activité volontairement
 
+
+### Variable ajoutée
+
+* situation_emploi 
+    - "En activité professionnelle" 
+    - "En recherche d'emploi"       
+    - NA   (= pas sur le marché de l'emploi)
+
+
 **SI** *situation_situation* == En activité professionnelle 
 
 * 21 êtes_vous volontaire (VIE, VIA) ? *situation_volontariat* (148) **[cat]**
@@ -176,11 +185,14 @@ SITUATION ACTUELLE
     - Oui
     - Non
 
+
 **Si** *situation_situation* == recherche d'emploi
 
 * 24 Etes-vous à la recherche d'un emploi depuis la sortie de l'école ? *situation_recheche_depuis_ecole* (40) **[cat]** (REM coquille)
     - Oui
     - Non
+    
+    
 * 25 Depuis combien de temps êtes-vous à la recherche d'un emploi ? *situation_temps_recherce* (41) **[ord]** (REM coquille)
     - Depuis moins de 2 mois
     - 2 mois à moins de 4 mois
@@ -205,7 +217,7 @@ SITUATION ACTUELLE
     - Autre difficulté non mentionnée dans la liste
 
 
-variables\
+variables (rang citation) \
 *situation_difficultes_projet* (34) **[num]**                  
 *situation_difficultes_mobilite* (13) **[num]**               
 *situation_difficultes_debouches* (17) **[num]**              
@@ -293,7 +305,6 @@ PREMIERES QUESTIONS SUR VOTRE EMPLOI ACTUEL
 
 ### variables ajoutées
 
-
 * france_etranger
 * votre_emploi_zonegeo
 * votre_emploi_pays
@@ -334,9 +345,9 @@ INFORMATIONS SUR VOTRE ENTREPRISE
        - Enseignement, recherche
        - Autre
 
-### Variable ajoutée ~~(A FAIRE)~~
+### Variable ajoutée 
 
-* *entreprise_secteur_letudiant* **[cat]** ~~(REM: Table de correspondance à faire)~~
+* *entreprise_secteur_letudiant* **[cat]** 
         - Finance-Banque-Assurance
         - Audit-Conseil-Bureau d'études
         - Commerce-Distribution
