@@ -585,10 +585,12 @@ cbyfboxjit <- function(dataf, varf, varc, useNA = "no",
         if (useNA == "no") {
                 dataf <- dataf[!is.na(dataf[[varf]]) & !is.na(dataf[[varc]]), ]
         }
-        ggplot(dataf,aes_(as.name(varf) , as.name(varc), color=as.name(varf))) +
-                geom_boxplot(aes(group = 1, fill =  labelall), outlier.colour = "gray") +
-                geom_boxplot(aes(fill = labelgroups), varwidth = TRUE, outlier.colour = "gray") +
-                geom_jitter( width =.5, alpha=.5) +
+        ggplot(dataf,aes_(as.name(varf) , as.name(varc))) +
+                geom_boxplot(aes(group = 1, fill =  labelall),
+                             outlier.colour = "gray", outlier.size = 0) +
+                geom_boxplot(aes(fill = labelgroups), varwidth = TRUE,
+                             outlier.colour = "gray", outlier.size = 0) +
+                geom_jitter( aes_(color=as.name(varf)), width =.5, alpha=.5) +
                 labs(fill = labellayer)
 }
 
@@ -1308,19 +1310,15 @@ catnum1c <- function(dataf, nomfact, nomvar,  useNA = "no",
         # faceted histogram
         pt2 <- cbyffachistogram(dataf, varf=nomfact, varc=nomvar, useNA = useNA,
                                 usedensity = FALSE, usendensity = FALSE,
-                                breaks = breaks, closed = closed,...)
+                                breaks = breaks, closed = closed)
         # summaries
-        c <- condsummaries(dataf = dataf,vname = nomvar,fname = nomfact)
+        # c <- condsummaries(dataf = dataf,vname = nomvar,fname = nomfact)
 
         # tables
         # make factor with cut
         # tb1 =
 
         # Planned:
-        # name = NULL,
-        # numcases = NULL,
-        # summaries = NULL,
-        # levels = NULL,
         # breaks = NULL,
         # closed= NULL,
         # table = NULL,
@@ -1334,12 +1332,21 @@ catnum1c <- function(dataf, nomfact, nomvar,  useNA = "no",
         name=c(nomvar, nomfact)
         numcases = length(!is.na(dataf[[nomvar]] & !is.na(dataf[[nomfact]])))
         # summaries
-        s <- condsummaries(dataf, nomvar, nomfact)
+        #
+        s <- try(condsummaries(dataf, nomvar, nomfact))
         # levels
-        levels = levels(dataf[[nomfact]]) # see if reorder
+        nlevels = levels(dataf[[nomfact]]) # see if reorder
         # breaks = breaks # include in output, nothing to compute ??? depends
         # table
         # table <-
+        make.result(
+                name = name,
+                numcases = numcases,
+                summaries = s,
+                levels = nlevels,
+                plot1 = pt1,
+                plot2 = pt2
+        )
 
 }
 

@@ -202,7 +202,7 @@ setresult('filieres_x_situation_emploi')
 
 res <- cat2(repdf, "filiere","situation_situation_short",
             orderfreq1 = TRUE, ordervar1 = "situation_situation_short" ,
-            orderval1 = "activité pro.", orderfun1 = mean)
+            orderval1 = "activité pro.", orderfun1 = mean, orderfreq2 = FALSE)
 setresult('filieres_x_situation_situation')
 
 

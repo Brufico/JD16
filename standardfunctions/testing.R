@@ -474,4 +474,6 @@ levels(factor(mpg$drv))
 # mp2c$expected
 
 
+rst <- catnum1c(mpg, "drv", "hwy")
+rst$plot1
 

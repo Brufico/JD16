@@ -576,6 +576,111 @@ Les spécialisations les situations et le taux d'emploi
 ------------------------------------------------------
 
 
+#### En considérant uniquement les diplômés sur le marché du travail
+
+```{r}
+res <- getresult("filieres_x_situation_emploi")
+
+numc <- res$numcases
+ptable <- select(res$table, filiere, num, perclabs)
+colnames(ptable) <- c("filiere", "Effectif", "%")
+
+lbl <- as.character(res$table$filiere)
+lbl[5] <- "Gestion des Hommes et RSE"
+lbl[6] <- "Global supply chain management – Eco. circ."
+
+plot <- res$plot +
+        theme(axis.text.x = element_text(angle = 67, hjust=1)) +
+        scale_x_discrete(limits = res$table$filiere, labels=lbl) +
+        scale_fill_discrete(NULL) +
+        geom_text(data = res$table , aes(x = filiere, y = .05, label = numlabs), angle = 90, hjust=0) +
+        geom_text(data = res$table , aes(x = filiere,
+                                        y = percval * 0.8, #percval - 0.03
+                                        label = perclabs)) +
+        theme(legend.position = c(0.85, 0.85)) +
+        labs(title = "Situation sur le marché de l' emploi",
+             x = "",
+             y = "pourcentage")
+
+        
+```
+
+Il y a `r numc` répondants
+
+```{r}
+
+kable(ptable, caption = "Table des taux d'emplois", align = 'c', digits = 2)
+```
+
+```{r, fig.width=lkfigwidth, fig.height= lkfigheight+2}
+plot
+
+```
+
+#### En considérant toutes les situations
+
+
+```{r}
+res <- getresult("filieres_x_situation_situation")
+
+numc <- res$numcases
+# ptable <- select(res$table, filiere, num, perclabs)
+
+ptable <- with(repdf, 
+     table(filiere , situation_situation_short, useNA="no")
+     )
+efflig <- margin.table(ptable, 1)
+ptable <- round(addmargins(prop.table(ptable,1) * 100, 2), 0)
+ptable <- cbind(effectif=efflig,ptable)
+ptable <- ptable[order(efflig,decreasing = TRUE),]
+
+
+colnames(ptable) <- c("effectif", "% activité pro.", "% création d'entreprise",
+                      "% poursuite etudes", "% Sans activité volontaire", 
+                      "% recherche d'emploi", "% Total")
+
+lbl <-  sapply(as.character(res$table$filiere),
+               function(x){
+                       if (x == "Gestion des Hommes et Responsabilité Sociale des Entreprises"){
+                               res <-  "Gestion des Hommes et RSE"
+                       } else if (x == "Global supply chain management – Economie circulaire") {
+                               res <- "Global supply chain management – Eco. circ."
+                       } else {
+                               res <- x
+                       }
+                       res
+               } )
+
+
+
+plot <- res$plot +
+        theme(axis.text.x = element_text(angle = 67, hjust=1)) +
+        scale_x_discrete(limits = res$table$filiere , labels=lbl) +
+        scale_fill_discrete(NULL) +
+        geom_text(data = res$table , aes(x = filiere, y = .05, label = numlabs), 
+                  angle = 90, hjust=0) +
+        geom_text(data = res$table , aes(x = filiere,
+                                         y = percval *.8,
+                                         label = ifelse(percval >= .3 , perclabs, ""))) +
+        theme(legend.position = "bottom") + #c(.90,.8)
+        labs(title = "Situation par filiere",
+             x = "",
+             y = "pourcentage")
+        
+```
+
+Il y a `r numc` répondants
+
+```{r}
+
+kable(ptable, caption = "Table", align = 'c', digits = 2)
+```
+
+```{r, fig.width=lkfigwidth, fig.height= lkfigheight+2}
+plot
+
+```
+
 
 
 

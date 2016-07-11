@@ -89,3 +89,51 @@ res$plot +
 
 
 
+# ------------------------------------------------------------------------------------------------
+
+library(stats)
+
+m <- matrix(1:4, 2)
+m
+margin.table(m, 1)
+margin.table(m, 2)
+
+mpr =apply(m,2, function(x)  {x/ sum(x)})
+mpr
+
+addmargins(m)
+
+
+
+ptable1 <- addmargins(ptable, 1, sum)
+col1 <- margin.table(ptable1,1)
+
+prptable <- round(prop.table(ptable1,1)*100,1)
+
+prptable2 <- cbind(col1,prptable)
+
+prptable2[order(prptable2[ , 1], decreasing = TRUE), ]
+
+# =========================================================
+
+repdf$votre_emploi_remuneration_total
+
+res <- catnum1c(repdf, "france_etranger", "votre_emploi_remuneration_total")
+setresult('votre_emploi_remuneration_total_x_france_etranger')
+
+res <- catnum1c(repdf, "france_etranger", "votre_emploi_remuneration_brut",
+                labellayer = "")
+setresult('votre_emploi_remuneration_brut_x_france_etranger')
+
+res <- catnum1c(repdf, "votre_emploi_zonegeo", "votre_emploi_remuneration_brut",
+                labellayer = "")
+setresult('votre_emploi_remuneration_brut_x_votre_emploi_zonegeo')
+
+res <- catnum1c(repdf, "filiere", "votre_emploi_remuneration_total",
+                labellayer = "")
+setresult('votre_emploi_remuneration_total_x_filiere')
+
+res$summaries
+windows(width=10)
+res$plot1
+res$plot2
