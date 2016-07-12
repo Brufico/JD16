@@ -543,7 +543,9 @@ setresult('votre_emploi_consultant')
 # --------------------------------------------------------------------------
 
 
-
+res <- num1c(dataf=actidf, nomvar = "votre_emploi_remuneration_brut", # part fixe de la rémunération
+             breaks=seq(14000,100000, by = 4000), closed="left")
+setresult('votre_emploi_remuneration_brut')
 
 res <- num1c(dataf=actidf, nomvar = "votre_emploi_remuneration_total",
              breaks=seq(14000,100000, by = 4000), closed="left")
@@ -553,7 +555,50 @@ res <- num1c(dataf=actidf, nomvar="votre_emploi_remuneration_part_variable",
              breaks=seq(0,40, by=5), closed="left")
 setresult('votre_emploi_remuneration_part_variable')
 
-# (part variable ajoutée)
+# (total rémunération = calculée, part variable = ajoutée)
+
+
+
+#'
+#' La rémunération et la situation géographique du poste
+#' -----------------------------------------------------
+#'
+
+
+#' ### Rémunération totale (brute) en fonction de la situation géographique
+
+res <- catnum1c(actidf, "france_etranger", "votre_emploi_remuneration_total",
+                labelall = "Ensemble", labelgroups = "Par situation")
+setresult('votre_emploi_remuneration_total_x_france_etranger')
+
+
+res <- catnum1c(actidf, "votre_emploi_zonegeo", "votre_emploi_remuneration_total",
+                labelall = "Ensemble", labelgroups = "Par situation")
+setresult('votre_emploi_remuneration_total_x_votre_emploi_zonegeo')
+
+
+
+
+#' ### Rémunération totale fixe (brute) hoirs prime et commissions, en fonction de la situation géographique
+res <- catnum1c(actidf, "france_etranger", "votre_emploi_remuneration_brut",
+                labelall = "Ensemble", labelgroups = "Par situation")
+setresult('votre_emploi_remuneration_brut_x_france_etranger')
+
+
+res <- catnum1c(actidf, "votre_emploi_zonegeo", "votre_emploi_remuneration_brut",
+                labelall = "Ensemble", labelgroups = "Par situation")
+setresult('votre_emploi_remuneration_brut_x_votre_emploi_zonegeo')
+
+
+
+
+#'
+#' La rémunération et la filière de spécialisation
+#' -----------------------------------------------
+#'
+res <- catnum1c(actidf, "filiere", "votre_emploi_remuneration_total",
+                labelall = "Ensemble", labelgroups = "Par filière")
+setresult('votre_emploi_remuneration_total_x_filiere')
 
 
 
@@ -561,7 +606,6 @@ setresult('votre_emploi_remuneration_part_variable')
 #' La recherche de l'emploi des diplômés en poste
 #' ----------------------------------------------
 #'
-
 
 res <- num1d(dataf=actidf, nomvar = "votre_emploi_temps_recherche", useNA = "no")
 setresult('votre_emploi_temps_recherche')

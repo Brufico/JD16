@@ -123,6 +123,7 @@ condfreqtable(dtf, "nam1", "dval1", useNA = "no")
 condfreqtable(mpg, "class", "drv") # ==> Problem within prop.table(), only works with dataframes
 condfreqtable(as.data.frame(mpg), "class", "drv")
 
+condsummaries(mpg, "hwy", "drv")
 
 
 

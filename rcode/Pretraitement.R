@@ -35,6 +35,11 @@ codepath <- file.path(".", mcodir, code1name)
 print(codepath) #dbg
 source(file.path(".", mcodir, code1name))
 
+# more code :  standard functions
+stdfundir <- "standardfunctions"
+stdfunname <- "standardfunctionsV5.R"
+source(file.path(".", stdfundir, stdfunname))
+
 
 
 #' Les Données principales
@@ -1048,14 +1053,9 @@ alldatapath <- file.path(".", datadir2, "alldata.Rda")
 # enregistrement (Rda)
 message("Saving .Rda")
 
-save( maindf,
-      repdf,
-      emploidf,
-      actidf,
-      rechdf,
-      suspectdf,
-      verifdf,
-      corrigdf,
+save( maindf, repdf,
+      emploidf, actidf, rechdf,
+      suspectdf, verifdf, corrigdf,
       classmaindf,
       file=alldatapath)
 

@@ -264,7 +264,7 @@ nonavect <- function(vect) {vect[which(!is.na(vect))]}
 sumvector <- function (var, dnames = sfdefault("namesum"),
                        reportNA = sfdefault("reportNA")) {
         if (length(var) == 0) {
-                sapply(numeric(length = 9), function(x) NA)
+                sapply(numeric(length = 8), function(x) NA) ## *** modifié 9 >> 8
         }else {# construct a more complete summary vector
                 s <- summary(var)
                 if (length(s) < 7) {s <- c(s, rep(0, times=7-length(s)))}
@@ -1312,7 +1312,7 @@ catnum1c <- function(dataf, nomfact, nomvar,  useNA = "no",
                                 usedensity = FALSE, usendensity = FALSE,
                                 breaks = breaks, closed = closed)
         # summaries
-        # c <- condsummaries(dataf = dataf,vname = nomvar,fname = nomfact)
+        # c <- condsummaries(dataf = dataf, vname = nomvar, fname = nomfact)
 
         # tables
         # make factor with cut

@@ -118,22 +118,41 @@ prptable2[order(prptable2[ , 1], decreasing = TRUE), ]
 
 repdf$votre_emploi_remuneration_total
 
-res <- catnum1c(repdf, "france_etranger", "votre_emploi_remuneration_total")
+res <- catnum1c(repdf, "france_etranger", "votre_emploi_remuneration_total",
+                labelall = "Ensemble", labelgroups = "Par situation")
 setresult('votre_emploi_remuneration_total_x_france_etranger')
 
+
+res <- catnum1c(repdf, "votre_emploi_zonegeo", "votre_emploi_remuneration_total",
+                labelall = "Ensemble", labelgroups = "Par situation")
+setresult('votre_emploi_remuneration_total_x_votre_emploi_zonegeo')
+
+
 res <- catnum1c(repdf, "france_etranger", "votre_emploi_remuneration_brut",
-                labellayer = "")
+                labelall = "Ensemble", labelgroups = "Par situation")
 setresult('votre_emploi_remuneration_brut_x_france_etranger')
 
+
 res <- catnum1c(repdf, "votre_emploi_zonegeo", "votre_emploi_remuneration_brut",
-                labellayer = "")
+                labelall = "Ensemble", labelgroups = "Par situation")
 setresult('votre_emploi_remuneration_brut_x_votre_emploi_zonegeo')
 
+
 res <- catnum1c(repdf, "filiere", "votre_emploi_remuneration_total",
-                labellayer = "")
+                labelall = "Ensemble", labelgroups = "Par filière")
 setresult('votre_emploi_remuneration_total_x_filiere')
 
+
 res$summaries
+
 windows(width=10)
-res$plot1
+res$plot1 + guides(color=FALSE) +
+        scale_color_manual(values = rep(c("red","blue", "darkolivegreen2", "orange"), 5)) +
+        scale_y_continuous(limits=c(0, NA))
+
+dev.off()
+
 res$plot2
+
+colors()
+

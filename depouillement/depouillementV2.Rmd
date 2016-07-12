@@ -6,7 +6,7 @@ output:
   word_document:
     fig_caption: yes
     fig_width: 7
-    toc: yes
+    toc: no
   html_document:
     css: customex2.css
     number_sections: yes
@@ -49,7 +49,7 @@ source(file.path(maindir, mcodir, code1name))
 
 # more code :  standard functions
 stdfundir <- "standardfunctions"
-stdfunname <- "standardfunctionsV4.R"
+stdfunname <- "standardfunctionsV5.R"
 source(file.path(maindir, stdfundir, stdfunname))
 
 
@@ -209,6 +209,7 @@ plot2 <- ggplot(repdf,aes(situation_situation, nrep) ) +
         geom_jitter(width = .5, height = .25, alpha =.4, color="blue") +
         coord_flip()
 
+plot2
 ```
 
 
@@ -576,47 +577,6 @@ Les spécialisations les situations et le taux d'emploi
 ------------------------------------------------------
 
 
-#### En considérant uniquement les diplômés sur le marché du travail
-
-```{r}
-res <- getresult("filieres_x_situation_emploi")
-
-numc <- res$numcases
-ptable <- select(res$table, filiere, num, perclabs)
-colnames(ptable) <- c("filiere", "Effectif", "%")
-
-lbl <- as.character(res$table$filiere)
-lbl[5] <- "Gestion des Hommes et RSE"
-lbl[6] <- "Global supply chain management – Eco. circ."
-
-plot <- res$plot +
-        theme(axis.text.x = element_text(angle = 67, hjust=1)) +
-        scale_x_discrete(limits = res$table$filiere, labels=lbl) +
-        scale_fill_discrete(NULL) +
-        geom_text(data = res$table , aes(x = filiere, y = .05, label = numlabs), angle = 90, hjust=0) +
-        geom_text(data = res$table , aes(x = filiere,
-                                        y = percval * 0.8, #percval - 0.03
-                                        label = perclabs)) +
-        theme(legend.position = c(0.85, 0.85)) +
-        labs(title = "Situation sur le marché de l' emploi",
-             x = "",
-             y = "pourcentage")
-
-        
-```
-
-Il y a `r numc` répondants
-
-```{r}
-
-kable(ptable, caption = "Table des taux d'emplois", align = 'c', digits = 2)
-```
-
-```{r, fig.width=lkfigwidth, fig.height= lkfigheight+2}
-plot
-
-```
-
 #### En considérant toutes les situations
 
 
@@ -681,8 +641,46 @@ plot
 
 ```
 
+#### En considérant uniquement les diplômés sur le marché du travail (i.e en activité/ création d'entreprise ou en recherche d'emploi)
 
+```{r}
+res <- getresult("filieres_x_situation_emploi")
 
+numc <- res$numcases
+ptable <- select(res$table, filiere, num, perclabs)
+colnames(ptable) <- c("filiere", "Effectif", "%")
+
+lbl <- as.character(res$table$filiere)
+lbl[5] <- "Gestion des Hommes et RSE"
+lbl[6] <- "Global supply chain management – Eco. circ."
+
+plot <- res$plot +
+        theme(axis.text.x = element_text(angle = 67, hjust=1)) +
+        scale_x_discrete(limits = res$table$filiere, labels=lbl) +
+        scale_fill_discrete(NULL) +
+        geom_text(data = res$table , aes(x = filiere, y = .05, label = numlabs), angle = 90, hjust=0) +
+        geom_text(data = res$table , aes(x = filiere,
+                                        y = percval * 0.8, #percval - 0.03
+                                        label = perclabs)) +
+        theme(legend.position = c(0.85, 0.85)) +
+        labs(title = "Situation sur le marché de l' emploi",
+             x = "",
+             y = "pourcentage")
+
+        
+```
+
+Il y a `r numc` répondants
+
+```{r}
+
+kable(ptable, caption = "Table des taux d'emplois", align = 'c', digits = 2)
+```
+
+```{r, fig.width=lkfigwidth, fig.height= lkfigheight+2}
+plot
+
+```
 
 
 
@@ -1767,7 +1765,6 @@ plot
 La situation géographique du poste
 -----------------------------------
 
-
 Les données de localisation n'ont pas été obtenues directement à partir du questionnaire d'enquête. Elles ont été collectées à partir des comptes LinkedIn des diplômé, puis croisées avec les réponses au questionnaire. Seules les localisations correspondant à des diplômés en activité professionnelles sont pertinentes ici.
 
 
@@ -1803,7 +1800,11 @@ plot2
 ```
 
 
-### Par grandes zones géographiques {-}
+La proportion des diplômés de la promotion qui sont en poste hors de France est donc de `r ptable[2,3]`
+
+
+### Situation par grandes zones géographiques {-}
+
 
 
 ```{r}
@@ -1822,6 +1823,7 @@ plot <- res$plot
 
 Il y a `r numc` répondants à cette question
 
+
 ```{r}
 kable(ptable[ptable[[2]] > 0, ], caption = "Table des réponses", align = 'c', digits = 2)
 ```
@@ -1836,9 +1838,9 @@ plot2
 
 
 
-### Pays {-}
+### Situation par pays {-}
 
-
+Cette distribution par pays est très peu exploitable du fait que l'effectif correspondant à chaque pays est très réduit. En particulier, de nomreux pays comptent un seul diplômé sur leur sol, et  aucune conclusion générale ne peut donc être formulée. Tout au plus cette distribution permet-elle de mieux comprendre la précédente.
 ```{r}
 res <- getresult("votre_emploi_pays")
 
@@ -1854,6 +1856,7 @@ plot <- res$plot
 ```
 
 Il y a `r numc` répondants à cette question
+
 
 ```{r}
 kable(ptable[ptable[[2]] > 0, ], caption = "Table des réponses", align = 'c', digits = 2)
@@ -2062,14 +2065,14 @@ plot2
 
 
 
-La rémunération
------------------------------------
+La rémunération (ensemble des répondants)
+-----------------------------------------
 
 ### Rémunération totale (brute) annuelle {-}
 (résultant des questions 69-71)
 (69 Quelle est votre rémunération brute annuelle, hors primes, avantages en nature et gratifications (en euros) ?
 70 Pouvez-vous estimer votre rémunération variable annuelle : primes, participation, intéressement, … (en Euros)
-REM : 71 Disposez-vous d'avantages en nature ? => aucune réponse)
+REM : question 71 Disposez-vous d'avantages en nature ? => aucune réponse)
 
 
 ```{r}
@@ -2156,10 +2159,132 @@ plot2
 
 ```
 
+# la rémunération totale annuelle brute hors éléments variables (primes, commissions...) (Question 69)
+
+Cette question n'est exploitée qu'à titre documentaire.
 
 
-La recherche de l'emploi
-------------------------
+```{r}
+res <- getresult("votre_emploi_remuneration_brut")
+
+numc <- res$numcases
+ptable <- res$ptable
+colnames(ptable) <- c("classe", "valeur centrale","Effectif", "%")
+pval <- res$chi2$test1$p.value
+seuilsignif <- 0.05
+seuilpeusignif <- 0.1
+estsignif <- ifelse(pval < seuilsignif,"est", ifelse(pval < seuilpeusignif,"est peu", "n'est pas"))
+
+sumtable <- res$summaries
+sumtable <- t(as.data.frame(sumtable))
+colnames(sumtable) <- c( "n", "Moyenne", "Ecart-type", "Min.", "Q1", "Mediane", "Q3", "Max.")
+
+plot <- res$plot
+```
+
+Il y a `r numc` répondants à cette question
+
+
+```{r}
+
+kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
+
+kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
+
+```
+
+<!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
+
+```{r}
+plot2 <- plot + labs(x = "Partie fixe de la rémunération annuelle brute", y = "effectif")
+plot2
+```
+
+
+
+
+La rémunération et la situation géographique du poste
+-----------------------------------------------------
+
+### Rémunération totale (brute, primes et commissions incluses), en fonction de la situation géographique
+
+```{r}
+res <- getresult('votre_emploi_remuneration_total_x_france_etranger')
+
+test <- with(actidf, t.test(votre_emploi_remuneration_total[france_etranger == "France"], 
+                    votre_emploi_remuneration_total[france_etranger == "Etranger"]))
+
+kable(res$summaries, caption = "Valeurs caractéristiques", align = 'c', digits = 2)
+
+```
+
+
+```{r, fig.width=lkfigwidth, fig.height=lkfigheight}
+res <- getresult('votre_emploi_remuneration_total_x_votre_emploi_zonegeo')
+
+res$plot1 + guides(color = FALSE) +
+        scale_color_manual(values = rep(c("red","blue", "darkolivegreen2", "orange"), 5)) +
+        scale_y_continuous(limits=c(0, NA))+
+        labs(x= "Zone géographique", y = "Rémunération totale (y compris primes et commissions")
+```
+
+(répondants: `r res$numcases`)
+
+Il y a dans l'échantillon une différence de rémunération entre la france et l'étranger, mais cette différence est statstiquement peu significative (p-valeur = `r test$p.value`)
+
+### Rémunération totale fixe (brute) hors primes et commissions, en fonction de la situation géographique
+
+```{r}
+res <- getresult('votre_emploi_remuneration_brut_x_france_etranger')
+
+kable(res$summaries, caption = "Valeurs caractéristiques", align = 'c', digits = 2)
+
+```
+
+
+```{r, fig.width=lkfigwidth, fig.height=lkfigheight}
+res <- getresult('votre_emploi_remuneration_brut_x_votre_emploi_zonegeo')
+
+res$plot1 + guides(color=FALSE) +
+        scale_color_manual(values = rep(c("red","blue", "darkolivegreen2", "orange"), 5)) +
+        scale_y_continuous(limits=c(0, NA))  +
+        labs(x= "Zone géographique", y = "Rémunération fixe (hors primes et commissions")
+```
+
+(répondants: `r res$numcases`)
+
+
+
+La rémunération et la filière de spécialisation
+-----------------------------------------------
+
+
+```{r}
+res <- getresult('votre_emploi_remuneration_total_x_filiere')
+
+kable(res$summaries, caption = "Valeurs caractéristiques", align = 'c', digits = 2)
+
+```
+
+
+```{r, fig.width=lkfigwidth, fig.height=lkfigheight + 2}
+
+res$plot1 + guides(color=FALSE) +
+        scale_color_manual(values = rep(c("red","blue", "darkolivegreen2", "orange"), 5)) +
+        scale_y_continuous(limits=c(0, NA)) +
+        theme(axis.text.x = element_text(angle = 67, hjust=1)) +
+        labs(x= "Filière", y = "Rémunération totale (y compris primes et commissions")
+        
+```
+
+(répondants: `r res$numcases`)
+
+
+
+
+
+La recherche de l'emploi occupé
+-------------------------------
 
 ### 72 Combien de temps a duré votre recherche d'emploi (en mois) ? {-}
 
