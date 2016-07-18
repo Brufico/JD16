@@ -1,7 +1,7 @@
 ---
-title: "Depouillement de l'enquête Jeunes diplômés Ipag 2015"
+title: "Depouillement de l'enquête Jeunes Diplômés Ipag 2015"
 author: "Bruno Fischer Colonimos"
-date: "04 juillet 2016"
+date: "18 juillet 2016"
 output:
   word_document:
     fig_caption: yes
@@ -2159,7 +2159,7 @@ plot2
 
 ```
 
-# la rémunération totale annuelle brute hors éléments variables (primes, commissions...) (Question 69)
+### la rémunération totale annuelle brute hors éléments variables (primes, commissions...) (Question 69)
 
 Cette question n'est exploitée qu'à titre documentaire.
 
@@ -2203,10 +2203,10 @@ plot2
 
 
 
-La rémunération et la situation géographique du poste
------------------------------------------------------
+### La rémunération et la situation géographique du poste
 
-### Rémunération totale (brute, primes et commissions incluses), en fonction de la situation géographique
+
+#### Rémunération totale (brute, primes et commissions incluses), en fonction de la situation géographique
 
 ```{r}
 res <- getresult('votre_emploi_remuneration_total_x_france_etranger')
@@ -2232,7 +2232,7 @@ res$plot1 + guides(color = FALSE) +
 
 Il y a dans l'échantillon une différence de rémunération entre la france et l'étranger, mais cette différence est statstiquement peu significative (p-valeur = `r test$p.value`)
 
-### Rémunération totale fixe (brute) hors primes et commissions, en fonction de la situation géographique
+#### Rémunération totale fixe (brute) hors primes et commissions, en fonction de la situation géographique
 
 ```{r}
 res <- getresult('votre_emploi_remuneration_brut_x_france_etranger')
@@ -2255,8 +2255,7 @@ res$plot1 + guides(color=FALSE) +
 
 
 
-La rémunération et la filière de spécialisation
------------------------------------------------
+### La rémunération et la filière de spécialisation
 
 
 ```{r}
@@ -2279,6 +2278,25 @@ res$plot1 + guides(color=FALSE) +
 
 (répondants: `r res$numcases`)
 
+```{r}
+# Test ANOVA
+# garder uniquement les valeurs non manquantes de la rémunération
+datadf=filter(emploidf, !is.na(votre_emploi_remuneration_total))
+# sélectionner les filières d'effectif suffisant'
+fileff <- datadf %>%
+        group_by(filiere) %>%
+        summarise(n = n()) %>%
+        filter(n >= 2)
+
+datadf <- datadf %>%
+        filter(filiere %in% fileff[[1]] )
+
+# faire le test
+test <- oneway.test(votre_emploi_remuneration_total ~ filiere , 
+                    data = datadf, na.action=na.omit)
+
+```
+La rémunération ne dépend pas significativement de la filière (p-valeur = `r test$p.valeur`)
 
 
 
@@ -2358,10 +2376,25 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 <- plot 
 plot2
 
 ```
+
+```{r}
+# Comparaison année précédente:
+
+#origine = stage:
+x1 <- ptable[1,2]+ptable[5,2]
+n1 <- numc
+# année précédente:
+x2 <- 58
+n2 <- 135
+
+test <- prop.test(c(x1,x2),c(n1,n2))
+
+```
+La proportion d'emplois issus de l'expérience professionnelle acquise à l'Ipag (stage, alternance...) est de `r x1 / n1`. Cette proportion est significativement inférieure à celle obtenue l'an dernier, c.a.d. `r x2 / n2`. (p-valeur : `r test$p.value`)
 
 
 ### 74 Pouvez-vous préciser le site spécialisé ? (si vous avez trouvé cet emploi de cette façon) {-}
@@ -2411,7 +2444,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 <- plot
 plot2
 
 ```
@@ -2477,7 +2510,7 @@ kable(ptable, caption = "Table des réponses", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 <- plot
 plot2
 
 ```
@@ -2516,7 +2549,7 @@ kable(sumtable, caption = "valeurs caractéristiques", align = 'c', digits = 2)
 <!-- La différence des effectifs des catégories `r estsignif` significative (Chi² : p-valeur = `r pval*100`%) --> 
 
 ```{r}
-plot2 <- plot + labs(x = "", y = "Poucent")
+plot2 <- plot
 plot2
 
 ```
